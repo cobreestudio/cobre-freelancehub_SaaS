@@ -2,12 +2,17 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { LayoutDashboard, Users, FolderKanban, FileText, Zap, LogOut, UserCircle } from 'lucide-react'
+import { LayoutDashboard, Users, FolderKanban, FileText, Zap, LogOut, UserCircle, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import LanguageSwitcher from './LanguageSwitcher'
 import Link from 'next/link'
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const locale = useLocale()
@@ -32,15 +37,28 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 min-h-screen bg-gray-950 text-white flex flex-col shrink-0">
-      <div className="px-5 py-6">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="bg-indigo-500 p-1.5 rounded-lg">
-            <Zap size={14} className="text-white" />
+    <aside className={`
+      fixed lg:static inset-y-0 left-0 z-30
+      w-60 min-h-screen bg-gray-950 text-white flex flex-col shrink-0
+      transition-transform duration-200 ease-in-out
+      ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
+      <div className="px-5 py-6 flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="bg-indigo-500 p-1.5 rounded-lg">
+              <Zap size={14} className="text-white" />
+            </div>
+            <span className="text-base font-bold tracking-tight">FreelanceHub</span>
           </div>
-          <span className="text-base font-bold tracking-tight">FreelanceHub</span>
+          <p className="text-xs text-gray-500 pl-8">{t('tagline')}</p>
         </div>
-        <p className="text-xs text-gray-500 pl-8">{t('tagline')}</p>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 mt-0.5"
+        >
+          <X size={16} />
+        </button>
       </div>
 
       <div className="px-3 mb-2">
@@ -49,7 +67,7 @@ export default function Sidebar() {
 
       <nav className="flex-1 px-3 space-y-0.5">
         {links.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href}
+          <Link key={href} href={href} onClick={onClose}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
               isActive(href)
                 ? 'bg-indigo-600 text-white shadow-sm'

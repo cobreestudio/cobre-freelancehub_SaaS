@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Zap, CheckCircle } from 'lucide-react'
+import { Zap, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 export default function RegisterPage() {
   const params = useParams()
   const locale = params.locale as string
   const [form, setForm] = useState({ email: '', password: '', confirm: '' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -81,14 +83,38 @@ export default function RegisterPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
-          <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-            placeholder="Mínimo 6 caracteres" required className="input" />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              placeholder="Mínimo 6 caracteres"
+              required
+              className="input pr-10"
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmar contraseña</label>
-          <input type="password" value={form.confirm} onChange={e => setForm({ ...form, confirm: e.target.value })}
-            placeholder="Repite la contraseña" required className="input" />
+          <div className="relative">
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={form.confirm}
+              onChange={e => setForm({ ...form, confirm: e.target.value })}
+              placeholder="Repite la contraseña"
+              required
+              className="input pr-10"
+            />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         <button type="submit" disabled={loading}

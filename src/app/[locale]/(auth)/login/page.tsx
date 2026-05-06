@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Zap } from 'lucide-react'
+import { Zap, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const params = useParams()
   const locale = params.locale as string
   const [form, setForm] = useState({ email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -65,14 +66,23 @@ export default function LoginPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
-          <input
-            type="password"
-            value={form.password}
-            onChange={e => setForm({ ...form, password: e.target.value })}
-            placeholder="••••••••"
-            required
-            className="input"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              placeholder="••••••••"
+              required
+              className="input pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         <button type="submit" disabled={loading}

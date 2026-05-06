@@ -26,7 +26,7 @@ export default function NewInvoicePage() {
     setForm(f => ({ ...f, dueDate: nextMonth.toISOString().split('T')[0] }))
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.projectId) { setError('Selecciona un proyecto'); return }
     if (!form.amount || isNaN(Number(form.amount))) { setError('El importe debe ser un número'); return }

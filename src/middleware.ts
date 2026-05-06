@@ -3,18 +3,17 @@ import { NextResponse, type NextRequest } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 import { routing } from './i18n/routing'
 
-const intlMiddleware = createMiddleware(routing)
+const handleI18n = createMiddleware(routing)
 
-export async function middleware(request: NextRequest) {
-  const intlResponse = intlMiddleware(request)
+export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'TU_URL_AQUI') {
-    return intlResponse
+    return handleI18n(request)
   }
 
   const isAuthPage = /^\/(es|en|fr)\/(login|register)/.test(pathname)
-  let response = intlResponse || NextResponse.next({ request })
+  let response = handleI18n(request)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

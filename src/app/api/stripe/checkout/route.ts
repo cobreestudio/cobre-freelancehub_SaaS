@@ -14,38 +14,50 @@ export async function POST(req: NextRequest) {
   )
 
   const token = authHeader.replace('Bearer ', '')
-  const { data: { user } } = await supabase.auth.getUser(token)
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError) console.error('[stripe/checkout] auth error:', authError.message)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('stripe_customer_id, email')
     .eq('id', user.id)
     .single()
 
+  if (profileError) console.error('[stripe/checkout] profile error:', profileError.message)
+
   let customerId = profile?.stripe_customer_id as string | undefined
 
   if (!customerId) {
-    const customer = await getStripe().customers.create({
-      email: profile?.email || user.email || undefined,
-      metadata: { supabase_user_id: user.id },
-    })
-    customerId = customer.id
-    await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id)
+    try {
+      const customer = await getStripe().customers.create({
+        email: profile?.email || user.email || undefined,
+        metadata: { supabase_user_id: user.id },
+      })
+      customerId = customer.id
+      await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id)
+    } catch (e) {
+      console.error('[stripe/checkout] customer create error:', e)
+      return NextResponse.json({ error: 'Stripe error' }, { status: 500 })
+    }
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-  const session = await getStripe().checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
-    success_url: `${appUrl}/billing?success=true`,
-    cancel_url: `${appUrl}/billing`,
-    client_reference_id: user.id,
-    metadata: { supabase_user_id: user.id },
-    allow_promotion_codes: true,
-  })
-
-  return NextResponse.json({ url: session.url })
+  try {
+    const session = await getStripe().checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
+      success_url: `${appUrl}/billing?success=true`,
+      cancel_url: `${appUrl}/billing`,
+      client_reference_id: user.id,
+      metadata: { supabase_user_id: user.id },
+      allow_promotion_codes: true,
+    })
+    return NextResponse.json({ url: session.url })
+  } catch (e) {
+    console.error('[stripe/checkout] session create error:', e)
+    return NextResponse.json({ error: 'Stripe error' }, { status: 500 })
+  }
 }

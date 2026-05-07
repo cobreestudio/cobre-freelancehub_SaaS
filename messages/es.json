@@ -119,7 +119,8 @@
     "status": "Estado",
     "save": "Guardar",
     "cancel": "Cancelar",
-    "descriptionPlaceholder": "Descripción del proyecto..."
+    "descriptionPlaceholder": "Descripción del proyecto...",
+    "invoiced": "facturado"
   },
   "invoices": {
     "title": "Facturas",

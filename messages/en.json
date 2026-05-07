@@ -119,7 +119,8 @@
     "status": "Status",
     "save": "Save",
     "cancel": "Cancel",
-    "descriptionPlaceholder": "Project description..."
+    "descriptionPlaceholder": "Project description...",
+    "invoiced": "invoiced"
   },
   "invoices": {
     "title": "Invoices",

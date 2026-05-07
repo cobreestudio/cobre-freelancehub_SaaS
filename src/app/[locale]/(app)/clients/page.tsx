@@ -48,7 +48,12 @@ export default function ClientsPage() {
 
   const startEdit = (c: Client) => {
     setEditingId(c.id)
-    setEditForm({ name: c.name, email: c.email, phone: c.phone, company: c.company, status: c.status })
+    setEditForm({ name: c.name, email: c.email, phone: c.phone, company: c.company, status: c.status, notes: c.notes })
+  }
+
+  const copyEmail = (email: string) => {
+    navigator.clipboard.writeText(email)
+    show('Email copiado')
   }
 
   const saveEdit = async (c: Client) => {
@@ -138,6 +143,8 @@ export default function ClientsPage() {
                       placeholder="Teléfono" className="input" />
                     <input value={editForm.company || ''} onChange={e => setEditForm({ ...editForm, company: e.target.value })}
                       placeholder="Empresa" className="input" />
+                    <textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })}
+                      placeholder={t('notesPlaceholder')} rows={2} className="input col-span-2 resize-none" />
                   </div>
                   <div className="flex items-center gap-2">
                     <select value={editForm.status}
@@ -169,7 +176,7 @@ export default function ClientsPage() {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-400">
-                      {client.email && <span className="flex items-center gap-1"><Mail size={11} />{client.email}</span>}
+                      {client.email && <span onClick={() => copyEmail(client.email)} className="flex items-center gap-1 cursor-pointer hover:text-indigo-500 transition-colors"><Mail size={11} />{client.email}</span>}
                       {client.phone && <span className="flex items-center gap-1"><Phone size={11} />{client.phone}</span>}
                       {client.company && <span className="flex items-center gap-1"><Building size={11} />{client.company}</span>}
                     </div>

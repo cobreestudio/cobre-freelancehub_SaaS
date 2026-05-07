@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { projectStore } from '@/lib/store'
-import { Project } from '@/lib/types'
+import { projectStore, invoiceStore } from '@/lib/store'
+import { Project, Invoice } from '@/lib/types'
 import { Plus, Trash2, Euro, Calendar, Pencil, Check, X, FolderKanban, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
@@ -22,13 +22,17 @@ export default function ProjectsPage() {
   const t = useTranslations('projects')
   const tc = useTranslations('common')
   const [projects, setProjects] = useState<Project[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<Partial<Project>>({})
   const { toasts, show, dismiss } = useToast()
 
-  useEffect(() => { projectStore.getAll().then(setProjects) }, [])
+  useEffect(() => {
+    projectStore.getAll().then(setProjects)
+    invoiceStore.getAll().then(setInvoices)
+  }, [])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -186,6 +190,22 @@ export default function ProjectsPage() {
                     {project.description && (
                       <p className="text-xs text-gray-400 mt-1 truncate">{project.description}</p>
                     )}
+                    {project.budget > 0 && (() => {
+                      const invoiced = invoices.filter(i => i.projectId === project.id).reduce((s, i) => s + i.amount, 0)
+                      const pct = Math.min(100, Math.round((invoiced / project.budget) * 100))
+                      return (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-xs text-gray-300 mb-0.5">
+                            <span>{invoiced.toLocaleString('es-ES')} € {t('invoiced') || 'facturado'}</span>
+                            <span>{pct}%</span>
+                          </div>
+                          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-emerald-400' : 'bg-indigo-400'}`}
+                              style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button onClick={() => startEdit(project)}

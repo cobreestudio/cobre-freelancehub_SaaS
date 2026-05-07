@@ -211,9 +211,10 @@ export default function InvoicesPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusStyle[invoice.status]}`}>
                       {t(invoice.status)}
                     </span>
-                    {invoice.status === 'overdue' && (
-                      <span className="text-xs text-red-500 font-bold animate-pulse shrink-0">⚠</span>
-                    )}
+                    {invoice.status === 'overdue' && (() => {
+                      const days = Math.ceil((Date.now() - new Date(invoice.dueDate).getTime()) / 86400000)
+                      return <span className="text-xs text-red-500 font-bold animate-pulse shrink-0">+{days}d ⚠</span>
+                    })()}
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-400 mb-2">
                     <span>{invoice.projectTitle}</span>

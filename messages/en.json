@@ -179,7 +179,20 @@
     "duplicate": "Duplicate",
     "duplicated": "Invoice duplicated",
     "descriptionRequired": "Each line must have a description",
-    "itemPlaceholder": "Service description..."
+    "itemPlaceholder": "Service description...",
+    "importTitle": "Import from photo",
+    "importSubtitle": "Upload a photo and we'll fill in the details automatically",
+    "uploadZone": "Drag a photo here or click to select",
+    "uploadFormats": "JPG, PNG or WebP · max 10 MB",
+    "analyzing": "Analysing invoice with AI...",
+    "reviewTitle": "Review extracted data",
+    "reviewSubtitle": "Check everything is correct before saving",
+    "changeImage": "Change image",
+    "importBtn": "Import invoice",
+    "importSuccess": "Invoice imported successfully",
+    "parseError": "Could not read the data. Try with a clearer image.",
+    "extractedHint": "Detected in the image:",
+    "selectOrCreate": "Select an existing client"
   },
   "auth": {
     "loginTitle": "Sign in to your account",

@@ -179,7 +179,20 @@
     "duplicate": "Dupliquer",
     "duplicated": "Facture dupliquée",
     "descriptionRequired": "Chaque ligne doit avoir une description",
-    "itemPlaceholder": "Description du service..."
+    "itemPlaceholder": "Description du service...",
+    "importTitle": "Importer depuis une photo",
+    "importSubtitle": "Téléchargez une photo et nous remplirons les données automatiquement",
+    "uploadZone": "Glissez une photo ici ou cliquez pour sélectionner",
+    "uploadFormats": "JPG, PNG ou WebP · max 10 Mo",
+    "analyzing": "Analyse de la facture avec IA...",
+    "reviewTitle": "Vérifiez les données extraites",
+    "reviewSubtitle": "Vérifiez que tout est correct avant d'enregistrer",
+    "changeImage": "Changer l'image",
+    "importBtn": "Importer la facture",
+    "importSuccess": "Facture importée avec succès",
+    "parseError": "Impossible de lire les données. Essayez avec une image plus nette.",
+    "extractedHint": "Détecté dans l'image :",
+    "selectOrCreate": "Sélectionnez un client existant"
   },
   "auth": {
     "loginTitle": "Connectez-vous à votre compte",

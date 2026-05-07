@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown } from 'lucide-react'
+import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown, ImagePlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -208,13 +208,17 @@ export default function InvoicesPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {invoices.length > 0 && (
             <button onClick={handleExportCSV}
               className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-600 px-3 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors">
               <FileDown size={14} /> {t('exportCsv')}
             </button>
           )}
+          <Link href="/invoices/import"
+            className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-600 px-3 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors">
+            <ImagePlus size={14} /> {t('importTitle')}
+          </Link>
           <Link href="/invoices/new"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
             <Plus size={15} /> {t('newInvoice')}

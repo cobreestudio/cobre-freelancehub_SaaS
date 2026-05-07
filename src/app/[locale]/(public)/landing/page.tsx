@@ -18,7 +18,28 @@ export default function LandingPage() {
 
   const perks = [t('perk1'), t('perk2'), t('perk3'), t('perk4')]
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Cobre',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+      description: locale === 'es' ? 'Plan gratuito disponible' : locale === 'fr' ? 'Plan gratuit disponible' : 'Free plan available',
+    },
+    description: locale === 'es'
+      ? 'Gestiona clientes, proyectos y facturas para autónomos. Genera PDFs profesionales y envía recordatorios automáticos.'
+      : locale === 'fr'
+      ? 'Gérez vos clients, projets et factures en tant que freelance.'
+      : 'Manage clients, projects and invoices for freelancers. Generate professional PDFs and send automatic reminders.',
+  }
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="min-h-screen bg-white flex flex-col">
 
       {/* Nav */}
@@ -258,5 +279,6 @@ export default function LandingPage() {
       </footer>
 
     </div>
+    </>
   )
 }

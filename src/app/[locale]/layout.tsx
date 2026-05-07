@@ -17,6 +17,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} className={geist.variable}>
       <head>
+        <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#4f46e5" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

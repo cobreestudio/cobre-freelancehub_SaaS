@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown } from 'lucide-react'
+import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -28,6 +28,8 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('createdAt')
+  const [editId, setEditId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<{ amount: string; dueDate: string }>({ amount: '', dueDate: '' })
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
@@ -59,6 +61,20 @@ export default function InvoicesPage() {
         return da < db2 ? -1 : da > db2 ? 1 : 0
       })
   }, [invoices, search, statusFilter, sortBy])
+
+  const handleEditStart = (invoice: Invoice) => {
+    setEditId(invoice.id)
+    setEditForm({ amount: String(invoice.amount), dueDate: invoice.dueDate })
+  }
+
+  const handleEditSave = async (invoice: Invoice) => {
+    const amount = parseFloat(editForm.amount)
+    if (isNaN(amount) || amount <= 0) return
+    await invoiceStore.update({ ...invoice, amount, dueDate: editForm.dueDate })
+    invoiceStore.getAll().then(setInvoices)
+    setEditId(null)
+    show('Factura actualizada')
+  }
 
   const handleDelete = async (invoice: Invoice) => {
     if (!confirm(`¿Eliminar factura ${getInvoiceNumber(invoice, invoices.indexOf(invoice))}?`)) return
@@ -279,6 +295,10 @@ export default function InvoicesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => handleEditStart(invoice)} title="Editar"
+                    className="p-2 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors">
+                    <Pencil size={14} />
+                  </button>
                   <button onClick={() => handleReminder(invoice)} title="Recordatorio por email"
                     className="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors">
                     <Bell size={14} />
@@ -294,6 +314,40 @@ export default function InvoicesPage() {
                   </button>
                 </div>
               </div>
+
+              {editId === invoice.id && (
+                <div className="mt-3 ml-13 flex flex-wrap items-end gap-3 bg-indigo-50 rounded-xl px-4 py-3 border border-indigo-100">
+                  <div>
+                    <label className="block text-xs font-medium text-indigo-700 mb-1">Importe (€)</label>
+                    <input
+                      type="number" min="0" step="0.01"
+                      value={editForm.amount}
+                      onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))}
+                      className="input w-32 text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-indigo-700 mb-1">Vencimiento</label>
+                    <input
+                      type="date"
+                      value={editForm.dueDate}
+                      onChange={e => setEditForm(f => ({ ...f, dueDate: e.target.value }))}
+                      className="input text-sm"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEditSave(invoice)}
+                      className="flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                      <Check size={13} /> Guardar
+                    </button>
+                    <button onClick={() => setEditId(null)}
+                      className="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-500 text-xs font-medium px-3 py-2 rounded-lg hover:border-gray-300 transition-colors">
+                      <X size={13} /> Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

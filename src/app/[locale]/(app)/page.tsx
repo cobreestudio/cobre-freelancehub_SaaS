@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { clientStore, projectStore, invoiceStore } from '@/lib/store'
-import { Invoice, Project, Client } from '@/lib/types'
-import { Users, FolderKanban, FileText, TrendingUp, TrendingDown, Plus, ArrowRight, Minus } from 'lucide-react'
+import { clientStore, projectStore, invoiceStore, profileStore } from '@/lib/store'
+import { Invoice, Project, Client, Profile } from '@/lib/types'
+import { Users, FolderKanban, FileText, TrendingUp, TrendingDown, Plus, ArrowRight, Minus, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import {
@@ -94,18 +94,20 @@ export default function Dashboard() {
   const [clients, setClients] = useState<Client[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [revenueData, setRevenueData] = useState<ReturnType<typeof monthlyRevenue>>([])
   const [statusData, setStatusData] = useState<ReturnType<typeof projectStatus>>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
-      const [c, p, i] = await Promise.all([
-        clientStore.getAll(), projectStore.getAll(), invoiceStore.getAll(),
+      const [c, p, i, prof] = await Promise.all([
+        clientStore.getAll(), projectStore.getAll(), invoiceStore.getAll(), profileStore.get(),
       ])
       setClients(c)
       setProjects(p)
       setInvoices(i)
+      setProfile(prof)
       setRevenueData(monthlyRevenue(i))
       setStatusData(projectStatus(p))
       setLoading(false)
@@ -140,6 +142,23 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+
+      {/* Onboarding banner */}
+      {!loading && profile !== null && !profile.businessName && !profile.taxId && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-center gap-4">
+          <div className="bg-amber-100 p-2 rounded-xl shrink-0">
+            <AlertTriangle size={16} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800">Completa tu perfil para empezar</p>
+            <p className="text-xs text-amber-600 mt-0.5">Añade tus datos fiscales para poder generar facturas correctas.</p>
+          </div>
+          <Link href="/profile"
+            className="shrink-0 bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-colors">
+            Ir al perfil
+          </Link>
+        </div>
+      )}
 
       {/* Header */}
       <div>
@@ -290,7 +309,13 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          {!loading && hasRevenueData ? (
+          {loading ? (
+            <div className="h-[200px] flex items-end gap-2 px-2 animate-pulse">
+              {[60, 90, 45, 120, 75, 160].map((h, i) => (
+                <div key={i} className="flex-1 bg-gray-100 rounded-t-lg" style={{ height: `${h}px` }} />
+              ))}
+            </div>
+          ) : hasRevenueData ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={revenueData} barSize={32}>
                 <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
@@ -319,7 +344,16 @@ export default function Dashboard() {
             <h2 className="font-semibold text-gray-900">{t('projectStatus')}</h2>
             <p className="text-xs text-gray-400 mt-0.5">{t('projectStatusSub')}</p>
           </div>
-          {!loading && hasStatusData ? (
+          {loading ? (
+            <div className="h-[200px] flex flex-col items-center justify-center gap-4 animate-pulse">
+              <div className="w-28 h-28 rounded-full border-[16px] border-gray-100" style={{ borderTopColor: '#e5e7eb', borderRightColor: '#d1d5db', borderBottomColor: '#e5e7eb' }} />
+              <div className="flex gap-3">
+                {[80, 60, 70].map((w, i) => (
+                  <div key={i} className="h-3 bg-gray-100 rounded-full" style={{ width: `${w}px` }} />
+                ))}
+              </div>
+            </div>
+          ) : hasStatusData ? (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={statusData} cx="50%" cy="45%" innerRadius={50} outerRadius={75}

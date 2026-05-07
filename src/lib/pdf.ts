@@ -57,18 +57,38 @@ export function generateInvoicePDF(invoice: Invoice, invoiceNumber: string, prof
 
   // Table
   const tableStartY = Math.max(80, 63 + issuerLines.length * 5 + 8)
+  const ivaRate = invoice.ivaRate ?? 21
+  const irpfRate = invoice.irpfRate ?? 0
+  const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  const bodyRows = invoice.items && invoice.items.length > 0
+    ? invoice.items.map(item => [
+        item.description,
+        item.quantity % 1 === 0 ? String(item.quantity) : item.quantity.toLocaleString('es-ES'),
+        `${fmt(item.unitPrice)} €`,
+        `${fmt(item.quantity * item.unitPrice)} €`,
+      ])
+    : [[invoice.projectTitle, '1', `${fmt(invoice.amount)} €`, `${fmt(invoice.amount)} €`]]
+
+  const subtotal = invoice.items && invoice.items.length > 0
+    ? invoice.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0)
+    : invoice.amount
+  const ivaAmount = subtotal * (ivaRate / 100)
+  const irpfAmount = subtotal * (irpfRate / 100)
+  const total = subtotal + ivaAmount - irpfAmount
+
+  const footRows: string[][] = [
+    ['', '', 'Base imponible', `${fmt(subtotal)} €`],
+    ['', '', `IVA (${ivaRate}%)`, `${fmt(ivaAmount)} €`],
+    ...(irpfRate > 0 ? [['', '', `IRPF (${irpfRate}%)`, `-${fmt(irpfAmount)} €`]] : []),
+    ['', '', 'TOTAL', `${fmt(total)} €`],
+  ]
 
   autoTable(doc, {
     startY: tableStartY,
     head: [['Descripción', 'Uds.', 'Precio', 'Total']],
-    body: [
-      [invoice.projectTitle, '1', `${invoice.amount.toLocaleString('es-ES')} €`, `${invoice.amount.toLocaleString('es-ES')} €`],
-    ],
-    foot: [
-      ['', '', 'Base imponible', `${invoice.amount.toLocaleString('es-ES')} €`],
-      ['', '', 'IVA (21%)', `${(invoice.amount * 0.21).toLocaleString('es-ES', { maximumFractionDigits: 2 })} €`],
-      ['', '', 'TOTAL', `${(invoice.amount * 1.21).toLocaleString('es-ES', { maximumFractionDigits: 2 })} €`],
-    ],
+    body: bodyRows,
+    foot: footRows,
     headStyles: { fillColor: [79, 70, 229], fontStyle: 'bold', fontSize: 9 },
     footStyles: { fillColor: [245, 245, 255], textColor: [30, 30, 30], fontSize: 9 },
     alternateRowStyles: { fillColor: [248, 248, 255] },

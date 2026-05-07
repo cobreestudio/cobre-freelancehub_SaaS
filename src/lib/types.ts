@@ -22,6 +22,12 @@ export interface Project {
   createdAt: string
 }
 
+export interface InvoiceItem {
+  description: string
+  quantity: number
+  unitPrice: number
+}
+
 export interface Invoice {
   id: string
   invoiceNumber?: string
@@ -29,7 +35,10 @@ export interface Invoice {
   clientId: string
   clientName: string
   projectTitle: string
-  amount: number
+  amount: number        // base imponible
+  items?: InvoiceItem[]
+  ivaRate?: number      // default 21
+  irpfRate?: number     // default 0
   status: 'draft' | 'sent' | 'paid' | 'overdue'
   dueDate: string
   paidAt?: string

@@ -1,5 +1,5 @@
 import { createClient } from './supabase'
-import { Client, Project, Invoice, Profile } from './types'
+import { Client, Project, Invoice, InvoiceItem, Profile } from './types'
 
 const db = () => createClient()
 
@@ -53,7 +53,7 @@ export const invoiceStore = {
     const userId = await getUserId()
     if (!userId) return []
     const { data } = await db().from('invoices').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    return (data || []).map(r => ({ id: r.id, invoiceNumber: r.invoice_number || undefined, projectId: r.project_id, clientId: r.client_id, clientName: r.client_name, projectTitle: r.project_title, amount: r.amount, status: r.status, dueDate: r.due_date, paidAt: r.paid_at || undefined, createdAt: r.created_at }))
+    return (data || []).map(r => ({ id: r.id, invoiceNumber: r.invoice_number || undefined, projectId: r.project_id, clientId: r.client_id, clientName: r.client_name, projectTitle: r.project_title, amount: r.amount, items: (r.items as InvoiceItem[] | null) || undefined, ivaRate: r.iva_rate ?? 21, irpfRate: r.irpf_rate ?? 0, status: r.status, dueDate: r.due_date, paidAt: r.paid_at || undefined, createdAt: r.created_at }))
   },
   async nextNumber(): Promise<string> {
     const userId = await getUserId()
@@ -65,10 +65,10 @@ export const invoiceStore = {
   async add(invoice: Invoice) {
     const userId = await getUserId()
     if (!userId) return
-    await db().from('invoices').insert({ id: invoice.id, invoice_number: invoice.invoiceNumber || null, user_id: userId, project_id: invoice.projectId, client_id: invoice.clientId, client_name: invoice.clientName, project_title: invoice.projectTitle, amount: invoice.amount, status: invoice.status, due_date: invoice.dueDate, paid_at: invoice.paidAt || null, created_at: invoice.createdAt })
+    await db().from('invoices').insert({ id: invoice.id, invoice_number: invoice.invoiceNumber || null, user_id: userId, project_id: invoice.projectId, client_id: invoice.clientId, client_name: invoice.clientName, project_title: invoice.projectTitle, amount: invoice.amount, items: invoice.items || null, iva_rate: invoice.ivaRate ?? 21, irpf_rate: invoice.irpfRate ?? 0, status: invoice.status, due_date: invoice.dueDate, paid_at: invoice.paidAt || null, created_at: invoice.createdAt })
   },
   async update(invoice: Invoice) {
-    await db().from('invoices').update({ amount: invoice.amount, status: invoice.status, due_date: invoice.dueDate, paid_at: invoice.paidAt || null }).eq('id', invoice.id)
+    await db().from('invoices').update({ amount: invoice.amount, items: invoice.items || null, iva_rate: invoice.ivaRate ?? 21, irpf_rate: invoice.irpfRate ?? 0, status: invoice.status, due_date: invoice.dueDate, paid_at: invoice.paidAt || null }).eq('id', invoice.id)
   },
   async delete(id: string) {
     await db().from('invoices').delete().eq('id', id)

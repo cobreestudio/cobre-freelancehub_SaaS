@@ -164,7 +164,22 @@
     "unitPlural": "facturas",
     "status": "Estado",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "lineItems": "Líneas de concepto",
+    "addLine": "+ Añadir línea",
+    "itemDescription": "Descripción",
+    "itemQuantity": "Cant.",
+    "itemUnitPrice": "Precio/ud.",
+    "itemTotal": "Total",
+    "ivaRate": "IVA",
+    "applyIrpf": "IRPF",
+    "subtotal": "Base imponible",
+    "totalInvoice": "Total factura",
+    "exportCsv": "Exportar CSV",
+    "duplicate": "Duplicar",
+    "duplicated": "Factura duplicada",
+    "descriptionRequired": "La descripción de cada línea es obligatoria",
+    "itemPlaceholder": "Descripción del servicio..."
   },
   "auth": {
     "loginTitle": "Inicia sesión en tu cuenta",

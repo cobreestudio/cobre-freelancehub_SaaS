@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X } from 'lucide-react'
+import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -27,6 +27,8 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [planBlocked, setPlanBlocked] = useState(false)
   const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('createdAt')
   const [editId, setEditId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<{ amount: string; dueDate: string }>({ amount: '', dueDate: '' })
@@ -35,6 +37,10 @@ export default function InvoicesPage() {
   useEffect(() => {
     Promise.all([invoiceStore.getAll(), profileStore.get()]).then(async ([data, prof]) => {
       setProfile(prof)
+      if ((prof?.plan || 'free') === 'free') {
+        const { FREE_LIMITS } = await import('@/lib/plans')
+        if (data.length >= FREE_LIMITS.invoices) setPlanBlocked(true)
+      }
       const today = new Date().toISOString().split('T')[0]
       const overdue = data.filter(i => i.status === 'sent' && i.dueDate < today)
       if (overdue.length > 0) {
@@ -98,6 +104,56 @@ export default function InvoicesPage() {
     show(t('pdfDownloaded'))
   }
 
+  const handleExportCSV = () => {
+    const headers = ['Número', 'Cliente', 'Proyecto', 'Base imponible', 'IVA%', 'IVA importe', 'IRPF%', 'IRPF importe', 'Total', 'Estado', 'Vencimiento', 'Fecha cobro']
+    const rows = invoices.map((inv, i) => {
+      const iva = inv.ivaRate ?? 21
+      const irpf = inv.irpfRate ?? 0
+      const ivaAmt = inv.amount * (iva / 100)
+      const irpfAmt = inv.amount * (irpf / 100)
+      return [
+        getInvoiceNumber(inv, i),
+        inv.clientName,
+        inv.projectTitle,
+        inv.amount.toFixed(2),
+        iva,
+        ivaAmt.toFixed(2),
+        irpf,
+        irpfAmt.toFixed(2),
+        (inv.amount + ivaAmt - irpfAmt).toFixed(2),
+        inv.status,
+        inv.dueDate,
+        inv.paidAt ? inv.paidAt.split('T')[0] : '',
+      ]
+    })
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `facturas-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    show(t('exportCsv'))
+  }
+
+  const handleDuplicate = async (invoice: Invoice) => {
+    if (planBlocked) { show('Límite del plan gratuito alcanzado', 'error'); return }
+    setDuplicating(invoice.id)
+    const invoiceNumber = await invoiceStore.nextNumber()
+    await invoiceStore.add({
+      ...invoice,
+      id: crypto.randomUUID(),
+      invoiceNumber,
+      status: 'draft',
+      paidAt: undefined,
+      createdAt: new Date().toISOString(),
+    })
+    invoiceStore.getAll().then(data => { setInvoices(data); setPlanBlocked(false) })
+    setDuplicating(null)
+    show(t('duplicated'))
+  }
+
   const handleReminder = (invoice: Invoice) => {
     const subject = encodeURIComponent(`Recordatorio de pago — Factura ${getInvoiceNumber(invoice, invoices.indexOf(invoice))}`)
     const body = encodeURIComponent(
@@ -152,10 +208,18 @@ export default function InvoicesPage() {
             )}
           </p>
         </div>
-        <Link href="/invoices/new"
-          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-          <Plus size={15} /> {t('newInvoice')}
-        </Link>
+        <div className="flex items-center gap-2">
+          {invoices.length > 0 && (
+            <button onClick={handleExportCSV}
+              className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-600 px-3 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors">
+              <FileDown size={14} /> {t('exportCsv')}
+            </button>
+          )}
+          <Link href="/invoices/new"
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+            <Plus size={15} /> {t('newInvoice')}
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -298,6 +362,10 @@ export default function InvoicesPage() {
                   <button onClick={() => handleEditStart(invoice)} title="Editar"
                     className="p-2 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors">
                     <Pencil size={14} />
+                  </button>
+                  <button onClick={() => handleDuplicate(invoice)} disabled={duplicating === invoice.id} title={t('duplicate')}
+                    className="p-2 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">
+                    <Copy size={14} />
                   </button>
                   <button onClick={() => handleReminder(invoice)} title="Recordatorio por email"
                     className="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors">

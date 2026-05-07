@@ -164,7 +164,22 @@
     "unitPlural": "invoices",
     "status": "Status",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "lineItems": "Line items",
+    "addLine": "+ Add line",
+    "itemDescription": "Description",
+    "itemQuantity": "Qty.",
+    "itemUnitPrice": "Unit price",
+    "itemTotal": "Total",
+    "ivaRate": "VAT",
+    "applyIrpf": "Withholding tax",
+    "subtotal": "Subtotal",
+    "totalInvoice": "Invoice total",
+    "exportCsv": "Export CSV",
+    "duplicate": "Duplicate",
+    "duplicated": "Invoice duplicated",
+    "descriptionRequired": "Each line must have a description",
+    "itemPlaceholder": "Service description..."
   },
   "auth": {
     "loginTitle": "Sign in to your account",

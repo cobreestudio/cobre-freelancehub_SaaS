@@ -182,9 +182,13 @@ export default function InvoicesPage() {
         return
       }
       const data = await res.json()
-      setAiEmail(data.email || '')
-    } catch {
-      setAiEmail('Error al generar el email. Inténtalo de nuevo.')
+      if (!res.ok) {
+        setAiEmail(`Error: ${data.error || res.status}`)
+      } else {
+        setAiEmail(data.email || '')
+      }
+    } catch (err) {
+      setAiEmail(`Error: ${err instanceof Error ? err.message : 'Inténtalo de nuevo'}`)
     }
     setAiLoading(false)
   }

@@ -19,36 +19,46 @@ Reglas:
 - Finaliza con "Un saludo," dejando espacio para que el emisor firme`
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
 
-  const token = authHeader.replace('Bearer ', '')
-  const { data: { user } } = await supabase.auth.getUser(token)
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user } } = await supabase.auth.getUser(token)
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: profile } = await supabase.from('profiles').select('plan, business_name, full_name').eq('id', user.id).single()
-  if (profile?.plan !== 'pro') {
-    return NextResponse.json({ error: 'pro_required' }, { status: 403 })
-  }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, business_name, full_name')
+      .eq('id', user.id)
+      .single()
 
-  const { invoice } = await req.json()
-  const daysOverdue = Math.ceil((Date.now() - new Date(invoice.dueDate).getTime()) / 86400000)
-  const issuerName = profile?.business_name || profile?.full_name || 'el emisor'
+    if (profile?.plan !== 'pro') {
+      return NextResponse.json({ error: 'pro_required' }, { status: 403 })
+    }
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'AI no configurada' }, { status: 500 })
+    }
 
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 600,
-    system: SYSTEM_PROMPT,
-    messages: [{
-      role: 'user',
-      content: `Redacta un email de recordatorio de pago para esta factura vencida:
+    const { invoice } = await req.json()
+    const daysOverdue = Math.ceil((Date.now() - new Date(invoice.dueDate).getTime()) / 86400000)
+    const issuerName = profile?.business_name || profile?.full_name || 'el emisor'
+
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      system: SYSTEM_PROMPT,
+      messages: [{
+        role: 'user',
+        content: `Redacta un email de recordatorio de pago para esta factura vencida:
 
 - Cliente: ${invoice.clientName}
 - Proyecto: ${invoice.projectTitle}
@@ -56,9 +66,14 @@ export async function POST(req: NextRequest) {
 - Fecha de vencimiento: ${new Date(invoice.dueDate).toLocaleDateString('es-ES')}
 - Días de retraso: ${daysOverdue} días
 - Emisor: ${issuerName}`
-    }]
-  })
+      }]
+    })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : ''
-  return NextResponse.json({ email: text, daysOverdue })
+    const text = response.content[0].type === 'text' ? response.content[0].text : ''
+    return NextResponse.json({ email: text, daysOverdue })
+  } catch (err) {
+    console.error('[ai/collections]', err)
+    const message = err instanceof Error ? err.message : 'Error desconocido'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }

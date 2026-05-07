@@ -29,7 +29,10 @@ export async function GET(request: Request) {
   }
 
   if (!invoices?.length) {
-    return NextResponse.json({ message: 'No hay facturas vencidas', sent: 0 })
+    const { data: all } = await supabase
+      .from('invoices')
+      .select('id, status, due_date, client_name')
+    return NextResponse.json({ message: 'No hay facturas vencidas', sent: 0, today, debug_all_invoices: all })
   }
 
   let sent = 0

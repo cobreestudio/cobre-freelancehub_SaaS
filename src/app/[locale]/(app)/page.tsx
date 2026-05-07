@@ -3,15 +3,13 @@
 import { useEffect, useState } from 'react'
 import { clientStore, projectStore, invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Project, Client, Profile } from '@/lib/types'
-import { Users, FolderKanban, FileText, TrendingUp, TrendingDown, Plus, ArrowRight, Minus, AlertTriangle } from 'lucide-react'
+import { Users, FolderKanban, FileText, TrendingUp, TrendingDown, Plus, ArrowRight, Minus, AlertTriangle, Check } from 'lucide-react'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
-
-// ── helpers ──────────────────────────────────────────────────────────────────
 
 function revenueInMonth(invoices: Invoice[], year: number, month: number): number {
   return invoices
@@ -58,8 +56,6 @@ function projectStatus(projects: Project[]) {
     .filter(d => d.value > 0)
 }
 
-// ── subcomponents ─────────────────────────────────────────────────────────────
-
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
@@ -86,10 +82,9 @@ function TrendBadge({ pct }: { pct: number | null }) {
   )
 }
 
-// ── page ─────────────────────────────────────────────────────────────────────
-
 export default function Dashboard() {
   const t = useTranslations('dashboard')
+  const locale = useLocale()
 
   const [clients, setClients] = useState<Client[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -140,22 +135,32 @@ export default function Dashboard() {
   const hasRevenueData = revenueData.some(d => d.ingresos > 0)
   const hasStatusData  = statusData.length > 0
 
+  const isNewUser = !loading && clients.length === 0 && projects.length === 0 && invoices.length === 0
+  const profileComplete = !!(profile?.businessName || profile?.taxId)
+
+  const gettingStartedSteps = [
+    { title: t('step1'), desc: t('step1Desc'), href: `/${locale}/profile`, done: profileComplete },
+    { title: t('step2'), desc: t('step2Desc'), href: `/${locale}/clients/new`, done: clients.length > 0 },
+    { title: t('step3'), desc: t('step3Desc'), href: `/${locale}/projects/new`, done: projects.length > 0 },
+    { title: t('step4'), desc: t('step4Desc'), href: `/${locale}/invoices/new`, done: invoices.length > 0 },
+  ]
+
   return (
     <div className="space-y-8">
 
-      {/* Onboarding banner */}
-      {!loading && profile !== null && !profile.businessName && !profile.taxId && (
+      {/* Onboarding banner — only when user has data but profile incomplete */}
+      {!loading && !isNewUser && profile !== null && !profileComplete && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-center gap-4">
           <div className="bg-amber-100 p-2 rounded-xl shrink-0">
             <AlertTriangle size={16} className="text-amber-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-800">Completa tu perfil para empezar</p>
-            <p className="text-xs text-amber-600 mt-0.5">Añade tus datos fiscales para poder generar facturas correctas.</p>
+            <p className="text-sm font-semibold text-amber-800">{t('setupProfile')}</p>
+            <p className="text-xs text-amber-600 mt-0.5">{t('setupProfileHint')}</p>
           </div>
-          <Link href="/profile"
+          <Link href={`/${locale}/profile`}
             className="shrink-0 bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-colors">
-            Ir al perfil
+            {t('goToProfile')}
           </Link>
         </div>
       )}
@@ -166,11 +171,41 @@ export default function Dashboard() {
         <p className="text-gray-400 text-sm mt-0.5">{t('subtitle')}</p>
       </div>
 
+      {/* Getting started checklist — new users only */}
+      {isNewUser && (
+        <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-6">
+          <h2 className="font-bold text-indigo-900 mb-0.5">{t('gettingStarted')}</h2>
+          <p className="text-sm text-indigo-500 mb-5">{t('gettingStartedSub')}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {gettingStartedSteps.map(({ title, desc, href, done }, i) => (
+              <Link key={i} href={href}
+                className={`group flex flex-col gap-2.5 p-4 rounded-xl border-2 transition-all ${
+                  done
+                    ? 'border-emerald-200 bg-white/60 opacity-70'
+                    : 'border-indigo-200 bg-white hover:border-indigo-400 hover:shadow-sm'
+                }`}>
+                <div className="flex items-center justify-between">
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    done ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'
+                  }`}>
+                    {done ? <Check size={12} /> : i + 1}
+                  </span>
+                  <ArrowRight size={13} className="text-indigo-300 group-hover:text-indigo-500 transition-colors" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
 
-        {/* Clientes */}
-        <Link href="/clients"
+        <Link href={`/${locale}/clients`}
           className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="flex items-center justify-between mb-4">
             <div className="bg-blue-50 p-2.5 rounded-xl">
@@ -187,8 +222,7 @@ export default function Dashboard() {
           )}
         </Link>
 
-        {/* Proyectos activos */}
-        <Link href="/projects"
+        <Link href={`/${locale}/projects`}
           className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="flex items-center justify-between mb-4">
             <div className="bg-indigo-50 p-2.5 rounded-xl">
@@ -202,8 +236,7 @@ export default function Dashboard() {
           <p className="text-xs font-medium text-gray-400">{t('activeProjects')}</p>
         </Link>
 
-        {/* Facturas pendientes */}
-        <Link href="/invoices"
+        <Link href={`/${locale}/invoices`}
           className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="flex items-center justify-between mb-4">
             <div className="bg-amber-50 p-2.5 rounded-xl">
@@ -216,12 +249,11 @@ export default function Dashboard() {
           </p>
           <p className="text-xs font-medium text-gray-400 mb-1">{t('pendingInvoices')}</p>
           {!loading && overdueCount > 0 && (
-            <p className="text-xs text-red-500 font-semibold animate-pulse">{overdueCount} vencida{overdueCount !== 1 ? 's' : ''} ⚠</p>
+            <p className="text-xs text-red-500 font-semibold animate-pulse">{t('overdueWarning', { count: overdueCount })}</p>
           )}
         </Link>
 
-        {/* Ingresos este mes */}
-        <Link href="/invoices"
+        <Link href={`/${locale}/invoices`}
           className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
           <div className="flex items-center justify-between mb-4">
             <div className="bg-emerald-50 p-2.5 rounded-xl">
@@ -255,7 +287,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center gap-4">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-gray-400">Salud del negocio · facturas cobradas</span>
+                <span className="text-xs font-medium text-gray-400">{t('businessHealth')}</span>
                 <span className={`text-xs font-bold ${textColor}`}>{pct}%</span>
               </div>
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -271,7 +303,7 @@ export default function Dashboard() {
       {!loading && (thisRevenue > 0 || lastRevenue > 0 || thisPaid > 0 || thisClients > 0) && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <h2 className="font-semibold text-gray-900 mb-4">{t('monthlyComparison')}</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { label: t('thisMonthRevenue'), current: `${thisRevenue.toLocaleString('es-ES')} €`, prev: `${lastRevenue.toLocaleString('es-ES')} €`, pct: revGrowth },
               { label: t('paidInvoices'), current: String(thisPaid), prev: String(lastPaid), pct: paidGrowth },
@@ -295,7 +327,6 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Revenue bar chart */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -321,10 +352,7 @@ export default function Dashboard() {
                 <XAxis dataKey="mes" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `${v}€`} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f3f4f6', radius: 6 }} />
-                <Bar dataKey="ingresos" radius={[6, 6, 0, 0]}
-                  fill="#6366f1"
-                  label={false}
-                />
+                <Bar dataKey="ingresos" radius={[6, 6, 0, 0]} fill="#6366f1" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -338,7 +366,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Project status donut */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <div className="mb-6">
             <h2 className="font-semibold text-gray-900">{t('projectStatus')}</h2>
@@ -346,7 +373,7 @@ export default function Dashboard() {
           </div>
           {loading ? (
             <div className="h-[200px] flex flex-col items-center justify-center gap-4 animate-pulse">
-              <div className="w-28 h-28 rounded-full border-[16px] border-gray-100" style={{ borderTopColor: '#e5e7eb', borderRightColor: '#d1d5db', borderBottomColor: '#e5e7eb' }} />
+              <div className="w-28 h-28 rounded-full border-[16px] border-gray-100" />
               <div className="flex gap-3">
                 {[80, 60, 70].map((w, i) => (
                   <div key={i} className="h-3 bg-gray-100 rounded-full" style={{ width: `${w}px` }} />
@@ -385,9 +412,9 @@ export default function Dashboard() {
         <h2 className="font-semibold text-gray-900 mb-4">{t('quickActions')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { href: '/clients/new', icon: Users, label: t('newClient'), color: 'group-hover:text-blue-500', border: 'group-hover:border-blue-300 group-hover:bg-blue-50' },
-            { href: '/projects/new', icon: FolderKanban, label: t('newProject'), color: 'group-hover:text-indigo-500', border: 'group-hover:border-indigo-300 group-hover:bg-indigo-50' },
-            { href: '/invoices/new', icon: FileText, label: t('newInvoice'), color: 'group-hover:text-emerald-500', border: 'group-hover:border-emerald-300 group-hover:bg-emerald-50' },
+            { href: `/${locale}/clients/new`, icon: Users, label: t('newClient'), color: 'group-hover:text-blue-500', border: 'group-hover:border-blue-300 group-hover:bg-blue-50' },
+            { href: `/${locale}/projects/new`, icon: FolderKanban, label: t('newProject'), color: 'group-hover:text-indigo-500', border: 'group-hover:border-indigo-300 group-hover:bg-indigo-50' },
+            { href: `/${locale}/invoices/new`, icon: FileText, label: t('newInvoice'), color: 'group-hover:text-emerald-500', border: 'group-hover:border-emerald-300 group-hover:bg-emerald-50' },
           ].map(({ href, icon: Icon, label, color, border }) => (
             <Link key={href} href={href}
               className={`group flex items-center gap-3 p-4 border-2 border-dashed border-gray-200 rounded-xl transition-all ${border}`}>

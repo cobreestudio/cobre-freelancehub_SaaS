@@ -81,6 +81,75 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* App mockup */}
+      <section className="py-12 px-6 overflow-hidden bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-200 ring-1 ring-inset ring-black/5">
+            {/* Browser bar */}
+            <div className="flex items-center gap-2 px-4 py-3 bg-gray-900 border-b border-gray-700">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-gray-600" />
+                <div className="w-3 h-3 rounded-full bg-gray-600" />
+                <div className="w-3 h-3 rounded-full bg-gray-600" />
+              </div>
+              <div className="flex-1 bg-gray-700 rounded-md px-3 py-1 text-xs text-gray-400 mx-4 text-center max-w-xs mx-auto">
+                cobre.app/dashboard
+              </div>
+            </div>
+            {/* App UI */}
+            <div className="flex h-56 sm:h-72">
+              {/* Sidebar */}
+              <div className="w-36 sm:w-44 bg-gray-950 p-3 shrink-0 hidden sm:flex flex-col">
+                <div className="flex items-center gap-2 px-2 py-3 mb-3">
+                  <div className="bg-indigo-500 p-1 rounded-md shrink-0">
+                    <Coins size={11} className="text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-white">Cobre</span>
+                </div>
+                {['Dashboard', 'Clientes', 'Proyectos', 'Facturas', 'Estadísticas'].map((item, i) => (
+                  <div key={item} className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-0.5 text-xs font-medium ${i === 0 ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${i === 0 ? 'bg-white' : 'bg-gray-600'}`} />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              {/* Dashboard content */}
+              <div className="flex-1 bg-gray-50 p-4 overflow-hidden">
+                <div className="mb-4 hidden sm:block">
+                  <div className="h-4 w-24 bg-gray-200 rounded mb-1.5" />
+                  <div className="h-2.5 w-36 bg-gray-100 rounded" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                  {[
+                    { color: 'bg-blue-50', val: '12', label: 'Clientes' },
+                    { color: 'bg-indigo-50', val: '5', label: 'Proyectos' },
+                    { color: 'bg-amber-50', val: '3', label: 'Pendientes' },
+                    { color: 'bg-emerald-50', val: '4.200€', label: 'Ingresos' },
+                  ].map((card, i) => (
+                    <div key={i} className={`${card.color} rounded-xl p-2.5`}>
+                      <p className="text-xs text-gray-400 mb-1 truncate">{card.label}</p>
+                      <p className="text-sm font-bold text-gray-800">{card.val}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-gray-100">
+                  <div className="h-2.5 w-28 bg-gray-100 rounded mb-3" />
+                  <div className="flex items-end gap-1 h-12 sm:h-16">
+                    {[35, 55, 40, 75, 50, 90].map((h, i) => (
+                      <div key={i} className="flex-1 rounded-t-md transition-all"
+                        style={{
+                          height: `${h}%`,
+                          background: i === 5 ? '#6366f1' : `rgba(99,102,241,${0.15 + i * 0.08})`
+                        }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="bg-gray-50 border-t border-gray-100 py-20 px-6">
         <div className="max-w-5xl mx-auto">

@@ -212,16 +212,16 @@ export default function InvoicesPage() {
           {invoices.length > 0 && (
             <button onClick={handleExportCSV}
               className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-600 px-3 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors">
-              <FileDown size={14} /> {t('exportCsv')}
+              <FileDown size={14} /> <span className="hidden sm:inline">{t('exportCsv')}</span>
             </button>
           )}
           <Link href="/invoices/import"
             className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-600 px-3 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors">
-            <ImagePlus size={14} /> {t('importTitle')}
+            <ImagePlus size={14} /> <span className="hidden sm:inline">{t('importTitle')}</span>
           </Link>
           <Link href="/invoices/new"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-            <Plus size={15} /> {t('newInvoice')}
+            <Plus size={15} /> <span className="hidden xs:inline sm:inline">{t('newInvoice')}</span>
           </Link>
         </div>
       </div>
@@ -368,11 +368,11 @@ export default function InvoicesPage() {
                     <Pencil size={14} />
                   </button>
                   <button onClick={() => handleDuplicate(invoice)} disabled={duplicating === invoice.id} title={t('duplicate')}
-                    className="p-2 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">
+                    className="hidden sm:flex p-2 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">
                     <Copy size={14} />
                   </button>
                   <button onClick={() => handleReminder(invoice)} title="Recordatorio por email"
-                    className="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors">
+                    className="hidden sm:flex p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors">
                     <Bell size={14} />
                   </button>
                   <button onClick={() => handleDownloadPDF(invoice, invoices.indexOf(invoice))} disabled={downloading === invoice.id}

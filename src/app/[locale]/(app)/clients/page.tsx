@@ -180,7 +180,7 @@ export default function ClientsPage() {
             <div key={client.id} className="px-5 py-4 hover:bg-gray-50/60 transition-colors">
               {editingId === client.id ? (
                 <div className="space-y-3 py-1">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input autoFocus value={editForm.name || ''} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                       placeholder="Nombre" className="input" />
                     <input value={editForm.email || ''} onChange={e => setEditForm({ ...editForm, email: e.target.value })}

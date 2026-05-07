@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { href: `/${locale}/invoices`, label: t('invoices'),  icon: FileText },
     { href: `/${locale}/stats`,    label: t('stats'),     icon: BarChart2 },
     { href: `/${locale}/profile`,  label: t('profile'),   icon: UserCircle },
-    { href: `/${locale}/billing`,  label: 'Plan',         icon: Crown },
+    { href: `/${locale}/billing`,  label: t('billing'),   icon: Crown },
   ]
 
   const isActive = (href: string) =>

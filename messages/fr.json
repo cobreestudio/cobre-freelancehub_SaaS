@@ -7,7 +7,8 @@
     "stats": "Statistiques",
     "logout": "Se déconnecter",
     "profile": "Mon profil",
-    "tagline": "Encaissez ce que vous méritez."
+    "tagline": "Encaissez ce que vous méritez.",
+    "billing": "Abonnement"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -37,7 +38,22 @@
     "noChangeVsLastMonth": "Pas de changement vs mois précédent",
     "previousMonth": "Mois précédent",
     "currentMonth": "Ce mois",
-    "noDataMonth": "Pas de données ce mois"
+    "noDataMonth": "Pas de données ce mois",
+    "setupProfile": "Complétez votre profil pour commencer",
+    "setupProfileHint": "Ajoutez vos informations fiscales pour générer des factures correctes.",
+    "goToProfile": "Aller au profil",
+    "businessHealth": "Santé de l'activité · factures encaissées",
+    "overdueWarning": "{count} en retard ⚠",
+    "gettingStarted": "Premiers pas",
+    "gettingStartedSub": "Suivez ces étapes pour configurer votre compte",
+    "step1": "Complétez votre profil",
+    "step1Desc": "Ajoutez vos informations pour des factures professionnelles.",
+    "step2": "Ajoutez votre premier client",
+    "step2Desc": "Créez un client pour commencer à travailler.",
+    "step3": "Créez un projet",
+    "step3Desc": "Organisez votre travail par projet.",
+    "step4": "Envoyez votre première facture",
+    "step4Desc": "Générez une facture PDF en un clic."
   },
   "clients": {
     "title": "Clients",

@@ -7,7 +7,8 @@
     "stats": "Statistics",
     "logout": "Log out",
     "profile": "My profile",
-    "tagline": "Get paid what you deserve."
+    "tagline": "Get paid what you deserve.",
+    "billing": "Billing"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -37,7 +38,22 @@
     "noChangeVsLastMonth": "No change vs last month",
     "previousMonth": "Last month",
     "currentMonth": "This month",
-    "noDataMonth": "No data this month"
+    "noDataMonth": "No data this month",
+    "setupProfile": "Complete your profile to get started",
+    "setupProfileHint": "Add your tax details to generate correct invoices.",
+    "goToProfile": "Go to profile",
+    "businessHealth": "Business health · collected invoices",
+    "overdueWarning": "{count} overdue ⚠",
+    "gettingStarted": "Let's get started",
+    "gettingStartedSub": "Follow these steps to set up your account",
+    "step1": "Complete your profile",
+    "step1Desc": "Add your details for professional invoices.",
+    "step2": "Add your first client",
+    "step2Desc": "Create a client to start working.",
+    "step3": "Create a project",
+    "step3Desc": "Organise your work by project.",
+    "step4": "Send your first invoice",
+    "step4Desc": "Generate a PDF invoice in one click."
   },
   "clients": {
     "title": "Clients",

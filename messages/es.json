@@ -7,7 +7,8 @@
     "stats": "Estadísticas",
     "logout": "Cerrar sesión",
     "profile": "Mi perfil",
-    "tagline": "Cobra lo que mereces."
+    "tagline": "Cobra lo que mereces.",
+    "billing": "Plan"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -37,7 +38,22 @@
     "noChangeVsLastMonth": "Sin cambios vs mes anterior",
     "previousMonth": "Mes anterior",
     "currentMonth": "Este mes",
-    "noDataMonth": "Sin datos este mes"
+    "noDataMonth": "Sin datos este mes",
+    "setupProfile": "Completa tu perfil para empezar",
+    "setupProfileHint": "Añade tus datos fiscales para poder generar facturas correctas.",
+    "goToProfile": "Ir al perfil",
+    "businessHealth": "Salud del negocio · facturas cobradas",
+    "overdueWarning": "{count} vencidas ⚠",
+    "gettingStarted": "Primeros pasos",
+    "gettingStartedSub": "Sigue estos pasos para configurar tu cuenta",
+    "step1": "Completa tu perfil",
+    "step1Desc": "Añade tus datos para facturas profesionales.",
+    "step2": "Añade tu primer cliente",
+    "step2Desc": "Crea un cliente para empezar a trabajar.",
+    "step3": "Crea un proyecto",
+    "step3Desc": "Organiza tu trabajo por proyecto.",
+    "step4": "Envía tu primera factura",
+    "step4Desc": "Genera un PDF de factura en un clic."
   },
   "clients": {
     "title": "Clientes",

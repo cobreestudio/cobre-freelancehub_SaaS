@@ -197,6 +197,9 @@ export default function ProjectsPage() {
                     {project.description && (
                       <p className="text-xs text-gray-400 mt-1 truncate">{project.description}</p>
                     )}
+                    {invoices.filter(i => i.projectId === project.id).length === 0 && project.status !== 'cancelled' && (
+                      <span className="text-xs text-gray-300 font-medium mt-0.5 inline-block">sin facturar</span>
+                    )}
                     {project.budget > 0 && (() => {
                       const invoiced = invoices.filter(i => i.projectId === project.id).reduce((s, i) => s + i.amount, 0)
                       const pct = Math.min(100, Math.round((invoiced / project.budget) * 100))

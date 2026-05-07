@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { clientStore, invoiceStore } from '@/lib/store'
 import { Client, Invoice } from '@/lib/types'
-import { Plus, Trash2, Mail, Phone, Building, Pencil, Check, X, Users, Search } from 'lucide-react'
+import { Plus, Trash2, Mail, Phone, Building, Pencil, Check, X, Users, Search, ArrowUpDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -24,6 +24,7 @@ export default function ClientsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [sortBy, setSortBy] = useState<'recent' | 'name'>('recent')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<Partial<Client>>({})
   const { toasts, show, dismiss } = useToast()
@@ -51,14 +52,19 @@ export default function ClientsPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return clients.filter(c => {
-      const matchSearch = !q || c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        (c.company?.toLowerCase().includes(q) ?? false)
-      const matchStatus = statusFilter === 'all' || c.status === statusFilter
-      return matchSearch && matchStatus
-    })
-  }, [clients, search, statusFilter])
+    return clients
+      .filter(c => {
+        const matchSearch = !q || c.name.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q) ||
+          (c.company?.toLowerCase().includes(q) ?? false)
+        const matchStatus = statusFilter === 'all' || c.status === statusFilter
+        return matchSearch && matchStatus
+      })
+      .sort((a, b) => sortBy === 'name'
+        ? a.name.localeCompare(b.name)
+        : a.createdAt < b.createdAt ? 1 : -1
+      )
+  }, [clients, search, statusFilter, sortBy])
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('deleteConfirm'))) return
@@ -116,6 +122,11 @@ export default function ClientsPage() {
               placeholder={t('searchPlaceholder')}
               className="input pl-9" />
           </div>
+          <button onClick={() => setSortBy(s => s === 'recent' ? 'name' : 'recent')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition-colors shrink-0">
+            <ArrowUpDown size={13} />
+            {sortBy === 'recent' ? 'A–Z' : t('newClient').split(' ')[0]}
+          </button>
           <div className="flex gap-1.5">
             {filterBtns.map(btn => (
               <button key={btn.value} onClick={() => setStatusFilter(btn.value)}

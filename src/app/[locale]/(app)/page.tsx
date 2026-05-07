@@ -226,6 +226,28 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      {/* Salud del negocio */}
+      {!loading && invoices.length > 0 && (() => {
+        const paidCount = invoices.filter(i => i.status === 'paid').length
+        const pct = Math.round((paidCount / invoices.length) * 100)
+        const color = pct >= 70 ? 'bg-emerald-400' : pct >= 40 ? 'bg-amber-400' : 'bg-red-400'
+        const textColor = pct >= 70 ? 'text-emerald-600' : pct >= 40 ? 'text-amber-600' : 'text-red-500'
+        return (
+          <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-gray-400">Salud del negocio · facturas cobradas</span>
+                <span className={`text-xs font-bold ${textColor}`}>{pct}%</span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+            <span className="text-xs text-gray-300 shrink-0">{paidCount} / {invoices.length}</span>
+          </div>
+        )
+      })()}
+
       {/* Comparativa mensual */}
       {!loading && (thisRevenue > 0 || lastRevenue > 0 || thisPaid > 0 || thisClients > 0) && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5">

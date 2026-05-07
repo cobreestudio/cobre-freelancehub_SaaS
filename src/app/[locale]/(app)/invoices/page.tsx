@@ -92,6 +92,8 @@ export default function InvoicesPage() {
 
   const paid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
   const pending = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0)
+  const filteredTotal = filtered.reduce((s, i) => s + i.amount, 0)
+  const isFiltered = search !== '' || statusFilter !== 'all'
   const relativeDate = (dateStr: string) => {
     const diff = Math.round((new Date(dateStr).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / 86400000)
     if (diff === 0) return t('dueDate') + ' hoy'
@@ -128,6 +130,9 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-400 text-sm mt-0.5">
             {filtered.length} {tc('of')} {invoices.length} {invoices.length === 1 ? t('unit') : t('unitPlural')}
+            {isFiltered && filtered.length > 0 && (
+              <span className="ml-2 text-indigo-500 font-semibold">· {filteredTotal.toLocaleString('es-ES')} €</span>
+            )}
           </p>
         </div>
         <Link href="/invoices/new"

@@ -539,7 +539,12 @@ export default function InvoicesPage() {
                     const subject = subjectLine ? encodeURIComponent(subjectLine.replace('Asunto:', '').trim()) : encodeURIComponent('Recordatorio de pago')
                     const bodyStart = subjectLine ? lines.indexOf(subjectLine) + 1 : 0
                     const body = encodeURIComponent(lines.slice(bodyStart).join('\n').trim())
-                    window.location.href = `mailto:?subject=${subject}&body=${body}`
+                    const a = document.createElement('a')
+                    a.href = `mailto:?subject=${subject}&body=${body}`
+                    a.style.display = 'none'
+                    document.body.appendChild(a)
+                    a.click()
+                    setTimeout(() => document.body.removeChild(a), 100)
                   }}
                   className="flex items-center gap-1.5 bg-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-purple-700 transition-colors">
                   <Bell size={13} /> Abrir en email

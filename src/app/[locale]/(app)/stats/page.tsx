@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { clientStore, projectStore, invoiceStore } from '@/lib/store'
 import { Client, Project, Invoice } from '@/lib/types'
-import { BarChart2, TrendingUp, Users, Award, ArrowRight, Building } from 'lucide-react'
+import { BarChart2, TrendingUp, Users, Award, ArrowRight, Building, Sparkles, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface ClientStat {
@@ -50,6 +50,9 @@ export default function StatsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
+  const [aiAnalysis, setAiAnalysis] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiOpen, setAiOpen] = useState(false)
 
   useEffect(() => {
     Promise.all([clientStore.getAll(), projectStore.getAll(), invoiceStore.getAll()])
@@ -58,9 +61,59 @@ export default function StatsPage() {
 
   const stats = useMemo(() => buildStats(clients, projects, invoices), [clients, projects, invoices])
 
+  const totalInvoiced = invoices.reduce((s, i) => s + i.amount, 0)
   const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
   const totalPending = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0)
+  const overdueInvoices = invoices.filter(i => i.status === 'overdue')
+  const overdueAmount = overdueInvoices.reduce((s, i) => s + i.amount, 0)
+  const collectionRate = totalInvoiced > 0 ? Math.round((totalRevenue / totalInvoiced) * 100) : 0
   const topClient = stats[0]
+  const zeroRateClients = stats.filter(s => s.totalInvoiced > 0 && s.collectionRate === 0).length
+  const activeProjects = projects.filter(p => p.status === 'in_progress' || p.status === 'pending').length
+
+  const handleAiAdvisor = async () => {
+    setAiOpen(true)
+    if (aiAnalysis) return
+    setAiLoading(true)
+    try {
+      const { createClient: createSupabaseClient } = await import('@/lib/supabase')
+      const { data: { session } } = await createSupabaseClient().auth.getSession()
+      if (!session) { setAiLoading(false); return }
+
+      const res = await fetch('/api/ai/advisor', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stats: {
+            totalClients: clients.length,
+            activeClients: clients.filter(c => c.status === 'active').length,
+            activeProjects,
+            totalInvoiced,
+            totalCollected: totalRevenue,
+            totalPending,
+            overdueCount: overdueInvoices.length,
+            overdueAmount,
+            collectionRate,
+            topClient: topClient?.name || '—',
+            topClientAmount: topClient?.totalInvoiced || 0,
+            zeroRateClients,
+          }
+        }),
+      })
+
+      const data = await res.json()
+      if (res.status === 403) {
+        setAiAnalysis('__pro_required__')
+      } else if (!res.ok) {
+        setAiAnalysis(`Error: ${data.error || res.status}`)
+      } else {
+        setAiAnalysis(data.analysis || '')
+      }
+    } catch (err) {
+      setAiAnalysis(`Error: ${err instanceof Error ? err.message : 'Inténtalo de nuevo'}`)
+    }
+    setAiLoading(false)
+  }
 
   if (loading) {
     return (
@@ -99,9 +152,16 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-        <p className="text-gray-400 text-sm mt-0.5">{t('subtitle')}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+          <p className="text-gray-400 text-sm mt-0.5">{t('subtitle')}</p>
+        </div>
+        <button onClick={handleAiAdvisor}
+          className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors shadow-sm">
+          <Sparkles size={14} />
+          <span className="hidden sm:inline">Análisis IA</span>
+        </button>
       </div>
 
       {/* Summary cards */}
@@ -154,7 +214,6 @@ export default function StatsPage() {
             {stats.map((s, i) => (
               <div key={s.clientId} className="px-5 py-4 hover:bg-gray-50/60 transition-colors">
                 <div className="flex items-center gap-4">
-                  {/* Rank + avatar */}
                   <div className="w-8 shrink-0 text-center">
                     {i === 0 && s.totalInvoiced > 0 ? (
                       <span className="text-base">🥇</span>
@@ -170,7 +229,6 @@ export default function StatsPage() {
                     <span className="text-sm font-bold text-indigo-600">{s.name.charAt(0).toUpperCase()}</span>
                   </div>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-gray-900 truncate">{s.name}</span>
@@ -188,7 +246,6 @@ export default function StatsPage() {
                       </span>
                     </div>
 
-                    {/* Metrics row */}
                     <div className="flex flex-wrap gap-x-5 gap-y-0.5 text-xs text-gray-400 mb-2">
                       <span>
                         <span className="font-semibold text-gray-700">{s.totalInvoiced.toLocaleString('es-ES')} €</span>
@@ -208,7 +265,6 @@ export default function StatsPage() {
                       <span>{s.invoiceCount} {s.invoiceCount === 1 ? t('invoiceUnit') : t('invoiceUnitPlural')}</span>
                     </div>
 
-                    {/* Collection rate bar */}
                     {s.totalInvoiced > 0 && (
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
@@ -224,7 +280,6 @@ export default function StatsPage() {
                     )}
                   </div>
 
-                  {/* Link to client */}
                   <Link href={`/${locale}/clients`}
                     className="p-2 text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors shrink-0">
                     <ArrowRight size={14} />
@@ -247,6 +302,74 @@ export default function StatsPage() {
             className="inline-flex items-center gap-1.5 bg-amber-600 text-white text-sm px-3 py-2 rounded-xl hover:bg-amber-700 transition-colors font-medium shrink-0">
             {t('viewInvoices')} <ArrowRight size={13} />
           </Link>
+        </div>
+      )}
+
+      {/* AI Advisor Modal */}
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={e => { if (e.target === e.currentTarget) setAiOpen(false) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-purple-100 p-1.5 rounded-lg">
+                  <Sparkles size={15} className="text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Asesor financiero IA</p>
+                  <p className="text-xs text-gray-400">Análisis de tu situación actual</p>
+                </div>
+              </div>
+              <button onClick={() => setAiOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="px-5 py-5">
+              {aiLoading ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-gray-500">Analizando tu negocio…</p>
+                </div>
+              ) : aiAnalysis === '__pro_required__' ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles size={20} className="text-purple-400" />
+                  </div>
+                  <p className="font-semibold text-gray-900 mb-1">Función Pro</p>
+                  <p className="text-sm text-gray-500 mb-5">El asesor financiero IA está disponible en el plan Pro.</p>
+                  <Link href={`/${locale}/billing`}
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Activar plan Pro
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {aiAnalysis.split('\n').filter(l => l.trim()).map((line, i) => (
+                    <div key={i} className={`flex gap-2.5 text-sm leading-relaxed ${
+                      line.trim().startsWith('-') ? 'text-gray-700' : 'text-gray-500 text-xs mt-3'
+                    }`}>
+                      {line.trim().startsWith('-') && (
+                        <span className="text-purple-400 font-bold shrink-0 mt-0.5">•</span>
+                      )}
+                      <span>{line.trim().startsWith('-') ? line.trim().slice(1).trim() : line.trim()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {!aiLoading && aiAnalysis && aiAnalysis !== '__pro_required__' && !aiAnalysis.startsWith('Error') && (
+              <div className="px-5 pb-4 flex justify-between items-center">
+                <p className="text-xs text-gray-300">Generado por Claude Haiku</p>
+                <button onClick={() => { setAiAnalysis(''); handleAiAdvisor() }}
+                  className="text-xs text-purple-600 hover:text-purple-700 font-medium">
+                  Regenerar
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Users, FolderKanban, FileText, Coins, LogOut, UserCircle, X } from 'lucide-react'
+import { LayoutDashboard, Users, FolderKanban, FileText, Coins, LogOut, UserCircle, X, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import LanguageSwitcher from './LanguageSwitcher'
 import Link from 'next/link'
@@ -31,6 +31,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { href: `/${locale}/clients`,  label: t('clients'),   icon: Users },
     { href: `/${locale}/projects`, label: t('projects'),  icon: FolderKanban },
     { href: `/${locale}/invoices`, label: t('invoices'),  icon: FileText },
+    { href: `/${locale}/stats`,    label: t('stats'),     icon: BarChart2 },
     { href: `/${locale}/profile`,  label: t('profile'),   icon: UserCircle },
   ]
 

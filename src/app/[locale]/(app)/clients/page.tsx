@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { clientStore } from '@/lib/store'
 import { Client } from '@/lib/types'
 import { Plus, Trash2, Mail, Phone, Building, Pencil, Check, X, Users, Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
 
@@ -12,13 +13,12 @@ const statusStyle: Record<Client['status'], string> = {
   active:   'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   inactive: 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
 }
-const statusLabel: Record<Client['status'], string> = {
-  active: 'Activo', inactive: 'Inactivo',
-}
 
 type StatusFilter = 'all' | Client['status']
 
 export default function ClientsPage() {
+  const t = useTranslations('clients')
+  const tc = useTranslations('common')
   const [clients, setClients] = useState<Client[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -40,10 +40,10 @@ export default function ClientsPage() {
   }, [clients, search, statusFilter])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este cliente?')) return
+    if (!confirm(t('deleteConfirm'))) return
     await clientStore.delete(id)
     clientStore.getAll().then(setClients)
-    show('Cliente eliminado')
+    show(t('deleted'))
   }
 
   const startEdit = (c: Client) => {
@@ -56,13 +56,13 @@ export default function ClientsPage() {
     await clientStore.update({ ...c, ...editForm, name: editForm.name.trim(), email: editForm.email.trim() })
     clientStore.getAll().then(setClients)
     setEditingId(null)
-    show('Cliente actualizado')
+    show(t('updated'))
   }
 
   const filterBtns: { label: string; value: StatusFilter }[] = [
-    { label: 'Todos', value: 'all' },
-    { label: 'Activos', value: 'active' },
-    { label: 'Inactivos', value: 'inactive' },
+    { label: t('filterAll'), value: 'all' },
+    { label: t('filterActive'), value: 'active' },
+    { label: t('filterInactive'), value: 'inactive' },
   ]
 
   return (
@@ -71,14 +71,14 @@ export default function ClientsPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            {filtered.length} de {clients.length} cliente{clients.length !== 1 ? 's' : ''}
+            {filtered.length} {tc('of')} {clients.length} {clients.length === 1 ? t('unit') : t('unitPlural')}
           </p>
         </div>
         <Link href="/clients/new"
           className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-          <Plus size={15} /> Nuevo cliente
+          <Plus size={15} /> {t('newClient')}
         </Link>
       </div>
 
@@ -87,7 +87,7 @@ export default function ClientsPage() {
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar por nombre, email o empresa..."
+              placeholder={t('searchPlaceholder')}
               className="input pl-9" />
           </div>
           <div className="flex gap-1.5">
@@ -110,18 +110,18 @@ export default function ClientsPage() {
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users size={20} className="text-gray-400" />
           </div>
-          <p className="font-semibold text-gray-600 mb-1">Sin clientes todavía</p>
-          <p className="text-gray-400 text-sm mb-5">Añade tu primer cliente para empezar.</p>
+          <p className="font-semibold text-gray-600 mb-1">{t('emptyTitle')}</p>
+          <p className="text-gray-400 text-sm mb-5">{t('emptyDesc')}</p>
           <Link href="/clients/new"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors font-medium">
-            <Plus size={14} /> Añadir cliente
+            <Plus size={14} /> {t('addFirst')}
           </Link>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 py-16 text-center">
           <Search size={20} className="text-gray-300 mx-auto mb-3" />
-          <p className="font-medium text-gray-400">Sin resultados</p>
-          <p className="text-sm text-gray-300 mt-1">Prueba con otros términos o filtros</p>
+          <p className="font-medium text-gray-400">{t('noResults')}</p>
+          <p className="text-sm text-gray-300 mt-1">{t('noResultsHint')}</p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
@@ -143,16 +143,16 @@ export default function ClientsPage() {
                     <select value={editForm.status}
                       onChange={e => setEditForm({ ...editForm, status: e.target.value as Client['status'] })}
                       className="input w-auto">
-                      <option value="active">Activo</option>
-                      <option value="inactive">Inactivo</option>
+                      <option value="active">{t('active')}</option>
+                      <option value="inactive">{t('inactive')}</option>
                     </select>
                     <button onClick={() => saveEdit(client)}
                       className="inline-flex items-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                      <Check size={14} /> Guardar
+                      <Check size={14} /> {t('save')}
                     </button>
                     <button onClick={() => setEditingId(null)}
                       className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-                      <X size={14} /> Cancelar
+                      <X size={14} /> {t('cancel')}
                     </button>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export default function ClientsPage() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-semibold text-gray-900 truncate">{client.name}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusStyle[client.status]}`}>
-                        {statusLabel[client.status]}
+                        {t(client.status)}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-400">

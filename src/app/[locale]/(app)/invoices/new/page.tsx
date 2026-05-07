@@ -6,8 +6,11 @@ import { invoiceStore, projectStore } from '@/lib/store'
 import { Invoice, Project } from '@/lib/types'
 import { ArrowLeft, ReceiptText } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function NewInvoicePage() {
+  const t = useTranslations('invoices')
+  const tc = useTranslations('common')
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [form, setForm] = useState({
@@ -28,9 +31,9 @@ export default function NewInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.projectId) { setError('Selecciona un proyecto'); return }
-    if (!form.amount || isNaN(Number(form.amount))) { setError('El importe debe ser un número'); return }
-    if (!form.dueDate) { setError('La fecha de vencimiento es obligatoria'); return }
+    if (!form.projectId) { setError(t('projectRequired')); return }
+    if (!form.amount || isNaN(Number(form.amount))) { setError(t('amountRequired')); return }
+    if (!form.dueDate) { setError(t('dueDateRequired')); return }
 
     setSaving(true)
     const project = projects.find(p => p.id === form.projectId)!
@@ -60,7 +63,7 @@ export default function NewInvoicePage() {
   return (
     <div className="max-w-lg">
       <Link href="/invoices" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 mb-7 transition-colors">
-        <ArrowLeft size={14} /> Volver a facturas
+        <ArrowLeft size={14} /> {t('backToInvoices')}
       </Link>
 
       <div className="flex items-center gap-3 mb-7">
@@ -68,8 +71,8 @@ export default function NewInvoicePage() {
           <ReceiptText size={20} className="text-indigo-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Nueva factura</h1>
-          <p className="text-sm text-gray-400">Asocia la factura a un proyecto</p>
+          <h1 className="text-xl font-bold text-gray-900">{t('newInvoiceTitle')}</h1>
+          <p className="text-sm text-gray-400">{t('newInvoiceSubtitle')}</p>
         </div>
       </div>
 
@@ -79,7 +82,7 @@ export default function NewInvoicePage() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Proyecto *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('project')} *</label>
           <select
             value={form.projectId}
             onChange={e => {
@@ -89,40 +92,40 @@ export default function NewInvoicePage() {
             }}
             className="input"
           >
-            <option value="">Selecciona un proyecto</option>
+            <option value="">{t('projectRequired')}</option>
             {projects.map(p => <option key={p.id} value={p.id}>{p.title} — {p.clientName}</option>)}
           </select>
           {selectedProject && (
             <p className="text-xs text-gray-400 mt-1.5">
-              Presupuesto del proyecto: <span className="font-semibold text-gray-600">{selectedProject.budget.toLocaleString('es-ES')} €</span>
+              {t('projectBudget')}: <span className="font-semibold text-gray-600">{selectedProject.budget.toLocaleString('es-ES')} €</span>
             </p>
           )}
           {projects.length === 0 && (
             <p className="text-xs text-amber-600 mt-1.5">
-              No tienes proyectos. <Link href="/projects/new" className="underline font-medium">Crea uno primero</Link>.
+              {t('noProjects')} <Link href="/projects/new" className="underline font-medium">{t('createProjectFirst')}</Link>.
             </p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Importe (€) *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('amount')} *</label>
             <input type="number" value={form.amount} onChange={e => set('amount', e.target.value)}
               placeholder="1500" min="0" className="input" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Estado</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('status')}</label>
             <select value={form.status} onChange={e => set('status', e.target.value)} className="input">
-              <option value="draft">Borrador</option>
-              <option value="sent">Enviada</option>
-              <option value="paid">Cobrada</option>
-              <option value="overdue">Vencida</option>
+              <option value="draft">{t('draft')}</option>
+              <option value="sent">{t('sent')}</option>
+              <option value="paid">{t('paid')}</option>
+              <option value="overdue">{t('overdue')}</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Fecha de vencimiento *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('dueDate_field')} *</label>
           <input type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)} className="input" />
         </div>
 
@@ -130,12 +133,12 @@ export default function NewInvoicePage() {
           <button type="submit" disabled={saving}
             className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
           >
-            {saving ? 'Guardando...' : 'Guardar factura'}
+            {saving ? tc('saving') : t('saveInvoice')}
           </button>
           <Link href="/invoices"
             className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors font-medium"
           >
-            Cancelar
+            {tc('cancel')}
           </Link>
         </div>
       </form>

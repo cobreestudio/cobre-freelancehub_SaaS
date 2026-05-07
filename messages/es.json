@@ -4,6 +4,7 @@
     "clients": "Clientes",
     "projects": "Proyectos",
     "invoices": "Facturas",
+    "stats": "Estadísticas",
     "logout": "Cerrar sesión",
     "profile": "Mi perfil",
     "tagline": "Cobra lo que mereces."
@@ -18,7 +19,14 @@
     "quickActions": "Acciones rápidas",
     "newClient": "Nuevo cliente",
     "newProject": "Nuevo proyecto",
-    "newInvoice": "Nueva factura"
+    "newInvoice": "Nueva factura",
+    "revenueChart": "Ingresos por mes",
+    "revenueChartSub": "Últimos 6 meses · facturas cobradas",
+    "projectStatus": "Estado proyectos",
+    "projectStatusSub": "Distribución actual",
+    "noData": "Sin datos aún",
+    "noDataHint": "Marca facturas como \"Cobrada\" para ver el gráfico",
+    "noProjects": "Sin proyectos aún"
   },
   "clients": {
     "title": "Clientes",
@@ -41,6 +49,7 @@
     "company": "Empresa",
     "status": "Estado",
     "namePlaceholder": "Juan García",
+    "emailPlaceholder": "juan@empresa.com",
     "phonePlaceholder": "+34 600 000 000",
     "companyPlaceholder": "Empresa S.L.",
     "nameRequired": "El nombre es obligatorio",
@@ -48,7 +57,15 @@
     "saveClient": "Guardar cliente",
     "backToClients": "Volver a clientes",
     "newClientTitle": "Nuevo cliente",
-    "newClientSubtitle": "Rellena los datos de contacto"
+    "newClientSubtitle": "Rellena los datos de contacto",
+    "searchPlaceholder": "Buscar por nombre, email o empresa...",
+    "filterAll": "Todos",
+    "filterActive": "Activos",
+    "filterInactive": "Inactivos",
+    "noResults": "Sin resultados",
+    "noResultsHint": "Prueba con otros términos o filtros",
+    "unit": "cliente",
+    "unitPlural": "clientes"
   },
   "projects": {
     "title": "Proyectos",
@@ -79,7 +96,17 @@
     "titleRequired": "El título es obligatorio",
     "budgetRequired": "El presupuesto debe ser un número",
     "noClients": "No tienes clientes aún.",
-    "createClientFirst": "Crea uno primero"
+    "createClientFirst": "Crea uno primero",
+    "searchPlaceholder": "Buscar por título, cliente o descripción...",
+    "filterAll": "Todos",
+    "noResults": "Sin resultados",
+    "noResultsHint": "Prueba con otros términos o filtros",
+    "unit": "proyecto",
+    "unitPlural": "proyectos",
+    "status": "Estado",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "descriptionPlaceholder": "Descripción del proyecto..."
   },
   "invoices": {
     "title": "Facturas",
@@ -114,7 +141,16 @@
     "amountRequired": "El importe debe ser un número",
     "dueDateRequired": "La fecha de vencimiento es obligatoria",
     "noProjects": "No tienes proyectos.",
-    "createProjectFirst": "Crea uno primero"
+    "createProjectFirst": "Crea uno primero",
+    "searchPlaceholder": "Buscar por cliente o proyecto...",
+    "filterAll": "Todas",
+    "noResults": "Sin resultados",
+    "noResultsHint": "Prueba con otros términos o filtros",
+    "unit": "factura",
+    "unitPlural": "facturas",
+    "status": "Estado",
+    "save": "Guardar",
+    "cancel": "Cancelar"
   },
   "auth": {
     "loginTitle": "Inicia sesión en tu cuenta",
@@ -140,6 +176,54 @@
     "save": "Guardar",
     "delete": "Eliminar",
     "edit": "Editar",
-    "currency": "€"
+    "currency": "€",
+    "of": "de"
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "subtitle": "Rendimiento por cliente",
+    "totalClients": "Clientes totales",
+    "totalCollected": "Total cobrado",
+    "topClient": "Mejor cliente",
+    "breakdown": "Desglose por cliente",
+    "sortedBy": "Ordenado por facturación",
+    "noData": "Sin datos todavía",
+    "noDataDesc": "Añade clientes y crea facturas para ver las estadísticas.",
+    "addClient": "Añadir cliente",
+    "noInvoicesYet": "Aún no hay facturas asociadas a ningún cliente",
+    "invoiced": "facturado",
+    "collected": "cobrado",
+    "pendingLabel": "pendiente",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "pendingAlert": "Tienes {amount} € pendientes de cobro",
+    "pendingAlertSub": "Facturas en estado \"Enviada\" o \"Vencida\"",
+    "viewInvoices": "Ver facturas",
+    "projectUnit": "proyecto",
+    "projectUnitPlural": "proyectos",
+    "invoiceUnit": "factura",
+    "invoiceUnitPlural": "facturas"
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "subtitle": "Estos datos aparecerán en tus facturas PDF",
+    "personalData": "Datos personales",
+    "businessData": "Datos de negocio",
+    "fullName": "Nombre completo",
+    "email": "Email",
+    "phone": "Teléfono",
+    "businessName": "Nombre del negocio / Autónomo",
+    "taxId": "NIF / CIF",
+    "address": "Dirección fiscal",
+    "previewTitle": "Vista previa en facturas",
+    "save": "Guardar perfil",
+    "saving": "Guardando...",
+    "saved": "Perfil guardado correctamente",
+    "fullNamePlaceholder": "Juan García López",
+    "emailPlaceholder": "juan@email.com",
+    "phonePlaceholder": "+34 600 000 000",
+    "businessNamePlaceholder": "Juan García — Diseño Web",
+    "taxIdPlaceholder": "12345678A",
+    "addressPlaceholder": "Calle Mayor 1, 28001 Madrid"
   }
 }

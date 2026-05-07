@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { projectStore } from '@/lib/store'
 import { Project } from '@/lib/types'
 import { Plus, Trash2, Euro, Calendar, Pencil, Check, X, FolderKanban, Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
 
@@ -14,13 +15,12 @@ const statusStyle: Record<Project['status'], string> = {
   completed:   'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   cancelled:   'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
 }
-const statusLabel: Record<Project['status'], string> = {
-  pending: 'Pendiente', in_progress: 'En progreso', completed: 'Completado', cancelled: 'Cancelado',
-}
 
 type StatusFilter = 'all' | Project['status']
 
 export default function ProjectsPage() {
+  const t = useTranslations('projects')
+  const tc = useTranslations('common')
   const [projects, setProjects] = useState<Project[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -42,10 +42,10 @@ export default function ProjectsPage() {
   }, [projects, search, statusFilter])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este proyecto?')) return
+    if (!confirm(t('deleteConfirm'))) return
     await projectStore.delete(id)
     projectStore.getAll().then(setProjects)
-    show('Proyecto eliminado')
+    show(t('deleted'))
   }
 
   const startEdit = (p: Project) => {
@@ -58,15 +58,15 @@ export default function ProjectsPage() {
     await projectStore.update({ ...p, ...editForm, title: editForm.title.trim() })
     projectStore.getAll().then(setProjects)
     setEditingId(null)
-    show('Proyecto actualizado')
+    show(t('updated'))
   }
 
   const filterBtns: { label: string; value: StatusFilter }[] = [
-    { label: 'Todos', value: 'all' },
-    { label: 'Pendiente', value: 'pending' },
-    { label: 'En progreso', value: 'in_progress' },
-    { label: 'Completado', value: 'completed' },
-    { label: 'Cancelado', value: 'cancelled' },
+    { label: t('filterAll'), value: 'all' },
+    { label: t('pending'), value: 'pending' },
+    { label: t('in_progress'), value: 'in_progress' },
+    { label: t('completed'), value: 'completed' },
+    { label: t('cancelled'), value: 'cancelled' },
   ]
 
   return (
@@ -75,14 +75,14 @@ export default function ProjectsPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Proyectos</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            {filtered.length} de {projects.length} proyecto{projects.length !== 1 ? 's' : ''}
+            {filtered.length} {tc('of')} {projects.length} {projects.length === 1 ? t('unit') : t('unitPlural')}
           </p>
         </div>
         <Link href="/projects/new"
           className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-          <Plus size={15} /> Nuevo proyecto
+          <Plus size={15} /> {t('newProject')}
         </Link>
       </div>
 
@@ -91,7 +91,7 @@ export default function ProjectsPage() {
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar por título, cliente o descripción..."
+              placeholder={t('searchPlaceholder')}
               className="input pl-9" />
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -114,18 +114,18 @@ export default function ProjectsPage() {
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FolderKanban size={20} className="text-gray-400" />
           </div>
-          <p className="font-semibold text-gray-600 mb-1">Sin proyectos todavía</p>
-          <p className="text-gray-400 text-sm mb-5">Crea tu primer proyecto para empezar a facturar.</p>
+          <p className="font-semibold text-gray-600 mb-1">{t('emptyTitle')}</p>
+          <p className="text-gray-400 text-sm mb-5">{t('emptyDesc')}</p>
           <Link href="/projects/new"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors font-medium">
-            <Plus size={14} /> Crear proyecto
+            <Plus size={14} /> {t('createFirst')}
           </Link>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 py-16 text-center">
           <Search size={20} className="text-gray-300 mx-auto mb-3" />
-          <p className="font-medium text-gray-400">Sin resultados</p>
-          <p className="text-sm text-gray-300 mt-1">Prueba con otros términos o filtros</p>
+          <p className="font-medium text-gray-400">{t('noResults')}</p>
+          <p className="text-sm text-gray-300 mt-1">{t('noResultsHint')}</p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
@@ -137,13 +137,13 @@ export default function ProjectsPage() {
                     <input autoFocus value={editForm.title || ''} onChange={e => setEditForm({ ...editForm, title: e.target.value })}
                       placeholder="Título" className="input col-span-2" />
                     <input type="number" value={editForm.budget || ''} onChange={e => setEditForm({ ...editForm, budget: Number(e.target.value) })}
-                      placeholder="Presupuesto €" className="input" />
+                      placeholder={t('budget')} className="input" />
                     <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value as Project['status'] })}
                       className="input">
-                      <option value="pending">Pendiente</option>
-                      <option value="in_progress">En progreso</option>
-                      <option value="completed">Completado</option>
-                      <option value="cancelled">Cancelado</option>
+                      <option value="pending">{t('pending')}</option>
+                      <option value="in_progress">{t('in_progress')}</option>
+                      <option value="completed">{t('completed')}</option>
+                      <option value="cancelled">{t('cancelled')}</option>
                     </select>
                     <textarea value={editForm.description || ''} onChange={e => setEditForm({ ...editForm, description: e.target.value })}
                       placeholder="Descripción (opcional)" rows={2}
@@ -152,11 +152,11 @@ export default function ProjectsPage() {
                   <div className="flex items-center gap-2">
                     <button onClick={() => saveEdit(project)}
                       className="inline-flex items-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                      <Check size={14} /> Guardar
+                      <Check size={14} /> {t('save')}
                     </button>
                     <button onClick={() => setEditingId(null)}
                       className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-                      <X size={14} /> Cancelar
+                      <X size={14} /> {t('cancel')}
                     </button>
                   </div>
                 </div>
@@ -169,7 +169,7 @@ export default function ProjectsPage() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-semibold text-gray-900 truncate">{project.title}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusStyle[project.status]}`}>
-                        {statusLabel[project.status]}
+                        {t(project.status)}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-400">

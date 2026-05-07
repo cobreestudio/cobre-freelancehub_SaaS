@@ -4,6 +4,7 @@
     "clients": "Clients",
     "projects": "Projets",
     "invoices": "Factures",
+    "stats": "Statistiques",
     "logout": "Se déconnecter",
     "profile": "Mon profil",
     "tagline": "Encaissez ce que vous méritez."
@@ -18,7 +19,14 @@
     "quickActions": "Actions rapides",
     "newClient": "Nouveau client",
     "newProject": "Nouveau projet",
-    "newInvoice": "Nouvelle facture"
+    "newInvoice": "Nouvelle facture",
+    "revenueChart": "Revenus par mois",
+    "revenueChartSub": "6 derniers mois · factures encaissées",
+    "projectStatus": "Statut des projets",
+    "projectStatusSub": "Répartition actuelle",
+    "noData": "Pas encore de données",
+    "noDataHint": "Marquez des factures comme \"Payée\" pour voir le graphique",
+    "noProjects": "Aucun projet pour l'instant"
   },
   "clients": {
     "title": "Clients",
@@ -41,6 +49,7 @@
     "company": "Entreprise",
     "status": "Statut",
     "namePlaceholder": "Jean Dupont",
+    "emailPlaceholder": "jean@entreprise.com",
     "phonePlaceholder": "+33 6 00 00 00 00",
     "companyPlaceholder": "Entreprise SARL",
     "nameRequired": "Le nom est obligatoire",
@@ -48,7 +57,15 @@
     "saveClient": "Enregistrer le client",
     "backToClients": "Retour aux clients",
     "newClientTitle": "Nouveau client",
-    "newClientSubtitle": "Remplissez les coordonnées"
+    "newClientSubtitle": "Remplissez les coordonnées",
+    "searchPlaceholder": "Rechercher par nom, email ou entreprise...",
+    "filterAll": "Tous",
+    "filterActive": "Actifs",
+    "filterInactive": "Inactifs",
+    "noResults": "Aucun résultat",
+    "noResultsHint": "Essayez d'autres termes ou filtres",
+    "unit": "client",
+    "unitPlural": "clients"
   },
   "projects": {
     "title": "Projets",
@@ -79,7 +96,17 @@
     "titleRequired": "Le titre est obligatoire",
     "budgetRequired": "Le budget doit être un nombre",
     "noClients": "Vous n'avez pas encore de clients.",
-    "createClientFirst": "Créez-en un d'abord"
+    "createClientFirst": "Créez-en un d'abord",
+    "searchPlaceholder": "Rechercher par titre, client ou description...",
+    "filterAll": "Tous",
+    "noResults": "Aucun résultat",
+    "noResultsHint": "Essayez d'autres termes ou filtres",
+    "unit": "projet",
+    "unitPlural": "projets",
+    "status": "Statut",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "descriptionPlaceholder": "Description du projet..."
   },
   "invoices": {
     "title": "Factures",
@@ -114,7 +141,16 @@
     "amountRequired": "Le montant doit être un nombre",
     "dueDateRequired": "La date d'échéance est obligatoire",
     "noProjects": "Vous n'avez pas encore de projets.",
-    "createProjectFirst": "Créez-en un d'abord"
+    "createProjectFirst": "Créez-en un d'abord",
+    "searchPlaceholder": "Rechercher par client ou projet...",
+    "filterAll": "Toutes",
+    "noResults": "Aucun résultat",
+    "noResultsHint": "Essayez d'autres termes ou filtres",
+    "unit": "facture",
+    "unitPlural": "factures",
+    "status": "Statut",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
   },
   "auth": {
     "loginTitle": "Connectez-vous à votre compte",
@@ -140,6 +176,54 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "currency": "€"
+    "currency": "€",
+    "of": "sur"
+  },
+  "stats": {
+    "title": "Statistiques",
+    "subtitle": "Performance par client",
+    "totalClients": "Clients totaux",
+    "totalCollected": "Total encaissé",
+    "topClient": "Meilleur client",
+    "breakdown": "Détail par client",
+    "sortedBy": "Trié par chiffre d'affaires",
+    "noData": "Pas encore de données",
+    "noDataDesc": "Ajoutez des clients et créez des factures pour voir les statistiques.",
+    "addClient": "Ajouter un client",
+    "noInvoicesYet": "Aucune facture associée à un client pour l'instant",
+    "invoiced": "facturé",
+    "collected": "encaissé",
+    "pendingLabel": "en attente",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "pendingAlert": "Vous avez {amount} € en attente de paiement",
+    "pendingAlertSub": "Factures avec le statut \"Envoyée\" ou \"En retard\"",
+    "viewInvoices": "Voir les factures",
+    "projectUnit": "projet",
+    "projectUnitPlural": "projets",
+    "invoiceUnit": "facture",
+    "invoiceUnitPlural": "factures"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "subtitle": "Ces données apparaîtront sur vos factures PDF",
+    "personalData": "Données personnelles",
+    "businessData": "Données professionnelles",
+    "fullName": "Nom complet",
+    "email": "Email",
+    "phone": "Téléphone",
+    "businessName": "Nom du business / Freelance",
+    "taxId": "Numéro fiscal",
+    "address": "Adresse de facturation",
+    "previewTitle": "Aperçu sur les factures",
+    "save": "Enregistrer le profil",
+    "saving": "Enregistrement...",
+    "saved": "Profil enregistré avec succès",
+    "fullNamePlaceholder": "Jean Dupont",
+    "emailPlaceholder": "jean@email.com",
+    "phonePlaceholder": "+33 6 00 00 00 00",
+    "businessNamePlaceholder": "Jean Dupont — Design Web",
+    "taxIdPlaceholder": "FR 00 123456789",
+    "addressPlaceholder": "1 rue de la Paix, 75001 Paris"
   }
 }

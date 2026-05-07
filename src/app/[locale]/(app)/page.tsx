@@ -5,6 +5,7 @@ import { clientStore, projectStore, invoiceStore } from '@/lib/store'
 import { Invoice, Project } from '@/lib/types'
 import { Users, FolderKanban, FileText, TrendingUp, Plus, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -50,6 +51,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function Dashboard() {
+  const t = useTranslations('dashboard')
   const [data, setData] = useState({ clients: 0, activeProjects: 0, pendingInvoices: 0, totalRevenue: 0 })
   const [revenueData, setRevenueData] = useState<ReturnType<typeof monthlyRevenue>>([])
   const [statusData, setStatusData] = useState<ReturnType<typeof projectStatus>>([])
@@ -74,10 +76,10 @@ export default function Dashboard() {
   }, [])
 
   const stats = [
-    { label: 'Clientes', value: data.clients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', href: '/clients' },
-    { label: 'Proyectos activos', value: data.activeProjects, icon: FolderKanban, color: 'text-indigo-600', bg: 'bg-indigo-50', href: '/projects' },
-    { label: 'Facturas pendientes', value: data.pendingInvoices, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50', href: '/invoices' },
-    { label: 'Total cobrado', value: `${data.totalRevenue.toLocaleString('es-ES')} €`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', href: '/invoices' },
+    { label: t('totalClients'), value: data.clients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', href: '/clients' },
+    { label: t('activeProjects'), value: data.activeProjects, icon: FolderKanban, color: 'text-indigo-600', bg: 'bg-indigo-50', href: '/projects' },
+    { label: t('pendingInvoices'), value: data.pendingInvoices, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50', href: '/invoices' },
+    { label: t('revenue'), value: `${data.totalRevenue.toLocaleString('es-ES')} €`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', href: '/invoices' },
   ]
 
   const hasRevenueData = revenueData.some(d => d.ingresos > 0)
@@ -88,8 +90,8 @@ export default function Dashboard() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-400 text-sm mt-0.5">Resumen de tu actividad</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+        <p className="text-gray-400 text-sm mt-0.5">{t('subtitle')}</p>
       </div>
 
       {/* Stats */}
@@ -119,8 +121,8 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-semibold text-gray-900">Ingresos por mes</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Últimos 6 meses · facturas cobradas</p>
+              <h2 className="font-semibold text-gray-900">{t('revenueChart')}</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{t('revenueChartSub')}</p>
             </div>
           </div>
           {!loading && hasRevenueData ? (
@@ -137,8 +139,8 @@ export default function Dashboard() {
               <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                 <TrendingUp size={18} className="text-gray-300" />
               </div>
-              <p className="text-sm text-gray-400">Sin datos aún</p>
-              <p className="text-xs text-gray-300 mt-1">Marca facturas como "Cobrada" para ver el gráfico</p>
+              <p className="text-sm text-gray-400">{t('noData')}</p>
+              <p className="text-xs text-gray-300 mt-1">{t('noDataHint')}</p>
             </div>
           )}
         </div>
@@ -146,8 +148,8 @@ export default function Dashboard() {
         {/* Project status donut */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <div className="mb-6">
-            <h2 className="font-semibold text-gray-900">Estado proyectos</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Distribución actual</p>
+            <h2 className="font-semibold text-gray-900">{t('projectStatus')}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{t('projectStatusSub')}</p>
           </div>
           {!loading && hasStatusData ? (
             <ResponsiveContainer width="100%" height={200}>
@@ -170,7 +172,7 @@ export default function Dashboard() {
               <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                 <FolderKanban size={18} className="text-gray-300" />
               </div>
-              <p className="text-sm text-gray-400">Sin proyectos aún</p>
+              <p className="text-sm text-gray-400">{t('noProjects')}</p>
             </div>
           )}
         </div>
@@ -178,12 +180,12 @@ export default function Dashboard() {
 
       {/* Quick actions */}
       <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h2 className="font-semibold text-gray-900 mb-4">Acciones rápidas</h2>
+        <h2 className="font-semibold text-gray-900 mb-4">{t('quickActions')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { href: '/clients/new', icon: Users, label: 'Nuevo cliente', color: 'group-hover:text-blue-500', border: 'group-hover:border-blue-300 group-hover:bg-blue-50' },
-            { href: '/projects/new', icon: FolderKanban, label: 'Nuevo proyecto', color: 'group-hover:text-indigo-500', border: 'group-hover:border-indigo-300 group-hover:bg-indigo-50' },
-            { href: '/invoices/new', icon: FileText, label: 'Nueva factura', color: 'group-hover:text-emerald-500', border: 'group-hover:border-emerald-300 group-hover:bg-emerald-50' },
+            { href: '/clients/new', icon: Users, label: t('newClient'), color: 'group-hover:text-blue-500', border: 'group-hover:border-blue-300 group-hover:bg-blue-50' },
+            { href: '/projects/new', icon: FolderKanban, label: t('newProject'), color: 'group-hover:text-indigo-500', border: 'group-hover:border-indigo-300 group-hover:bg-indigo-50' },
+            { href: '/invoices/new', icon: FileText, label: t('newInvoice'), color: 'group-hover:text-emerald-500', border: 'group-hover:border-emerald-300 group-hover:bg-emerald-50' },
           ].map(({ href, icon: Icon, label, color, border }) => (
             <Link key={href} href={href}
               className={`group flex items-center gap-3 p-4 border-2 border-dashed border-gray-200 rounded-xl transition-all ${border}`}>

@@ -6,8 +6,11 @@ import { projectStore, clientStore } from '@/lib/store'
 import { Project, Client } from '@/lib/types'
 import { ArrowLeft, FolderPlus } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function NewProjectPage() {
+  const t = useTranslations('projects')
+  const tc = useTranslations('common')
   const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [form, setForm] = useState({
@@ -29,9 +32,9 @@ export default function NewProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.clientId) { setError('Selecciona un cliente'); return }
-    if (!form.title.trim()) { setError('El título es obligatorio'); return }
-    if (!form.budget || isNaN(Number(form.budget))) { setError('El presupuesto debe ser un número'); return }
+    if (!form.clientId) { setError(t('clientRequired')); return }
+    if (!form.title.trim()) { setError(t('titleRequired')); return }
+    if (!form.budget || isNaN(Number(form.budget))) { setError(t('budgetRequired')); return }
 
     setSaving(true)
     const client = clients.find(c => c.id === form.clientId)!
@@ -59,7 +62,7 @@ export default function NewProjectPage() {
   return (
     <div className="max-w-lg">
       <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 mb-7 transition-colors">
-        <ArrowLeft size={14} /> Volver a proyectos
+        <ArrowLeft size={14} /> {t('backToProjects')}
       </Link>
 
       <div className="flex items-center gap-3 mb-7">
@@ -67,8 +70,8 @@ export default function NewProjectPage() {
           <FolderPlus size={20} className="text-indigo-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Nuevo proyecto</h1>
-          <p className="text-sm text-gray-400">Define el trabajo y el presupuesto</p>
+          <h1 className="text-xl font-bold text-gray-900">{t('newProjectTitle')}</h1>
+          <p className="text-sm text-gray-400">{t('newProjectSubtitle')}</p>
         </div>
       </div>
 
@@ -78,50 +81,50 @@ export default function NewProjectPage() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Cliente *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('client')} *</label>
           <select value={form.clientId} onChange={e => set('clientId', e.target.value)} className="input">
-            <option value="">Selecciona un cliente</option>
+            <option value="">{t('clientRequired')}</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>)}
           </select>
           {clients.length === 0 && (
             <p className="text-xs text-amber-600 mt-1.5">
-              No tienes clientes aún. <Link href="/clients/new" className="underline font-medium">Crea uno primero</Link>.
+              {t('noClients')} <Link href="/clients/new" className="underline font-medium">{t('createClientFirst')}</Link>.
             </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Título *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('title_field')} *</label>
           <input ref={titleRef} type="text" value={form.title} onChange={e => set('title', e.target.value)}
             placeholder="Diseño web corporativo" className="input" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('description')}</label>
           <textarea value={form.description} onChange={e => set('description', e.target.value)}
-            placeholder="Descripción del proyecto..." rows={3}
+            placeholder={t('descriptionPlaceholder')} rows={3}
             className="input resize-none" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Presupuesto (€) *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('budget')} *</label>
             <input type="number" value={form.budget} onChange={e => set('budget', e.target.value)}
               placeholder="1500" min="0" className="input" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Estado</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('status')}</label>
             <select value={form.status} onChange={e => set('status', e.target.value)} className="input">
-              <option value="pending">Pendiente</option>
-              <option value="in_progress">En progreso</option>
-              <option value="completed">Completado</option>
-              <option value="cancelled">Cancelado</option>
+              <option value="pending">{t('pending')}</option>
+              <option value="in_progress">{t('in_progress')}</option>
+              <option value="completed">{t('completed')}</option>
+              <option value="cancelled">{t('cancelled')}</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Fecha de inicio</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('startDate')}</label>
           <input type="date" value={form.startDate} onChange={e => set('startDate', e.target.value)} className="input" />
         </div>
 
@@ -129,12 +132,12 @@ export default function NewProjectPage() {
           <button type="submit" disabled={saving}
             className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60"
           >
-            {saving ? 'Guardando...' : 'Guardar proyecto'}
+            {saving ? tc('saving') : t('saveProject')}
           </button>
           <Link href="/projects"
             className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors font-medium"
           >
-            Cancelar
+            {tc('cancel')}
           </Link>
         </div>
       </form>

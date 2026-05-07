@@ -4,6 +4,7 @@
     "clients": "Clients",
     "projects": "Projects",
     "invoices": "Invoices",
+    "stats": "Statistics",
     "logout": "Log out",
     "profile": "My profile",
     "tagline": "Get paid what you deserve."
@@ -18,7 +19,14 @@
     "quickActions": "Quick actions",
     "newClient": "New client",
     "newProject": "New project",
-    "newInvoice": "New invoice"
+    "newInvoice": "New invoice",
+    "revenueChart": "Revenue by month",
+    "revenueChartSub": "Last 6 months · collected invoices",
+    "projectStatus": "Project status",
+    "projectStatusSub": "Current distribution",
+    "noData": "No data yet",
+    "noDataHint": "Mark invoices as \"Paid\" to see the chart",
+    "noProjects": "No projects yet"
   },
   "clients": {
     "title": "Clients",
@@ -41,6 +49,7 @@
     "company": "Company",
     "status": "Status",
     "namePlaceholder": "John Smith",
+    "emailPlaceholder": "john@company.com",
     "phonePlaceholder": "+1 555 000 0000",
     "companyPlaceholder": "Company Inc.",
     "nameRequired": "Name is required",
@@ -48,7 +57,15 @@
     "saveClient": "Save client",
     "backToClients": "Back to clients",
     "newClientTitle": "New client",
-    "newClientSubtitle": "Fill in the contact details"
+    "newClientSubtitle": "Fill in the contact details",
+    "searchPlaceholder": "Search by name, email or company...",
+    "filterAll": "All",
+    "filterActive": "Active",
+    "filterInactive": "Inactive",
+    "noResults": "No results",
+    "noResultsHint": "Try other terms or filters",
+    "unit": "client",
+    "unitPlural": "clients"
   },
   "projects": {
     "title": "Projects",
@@ -79,7 +96,17 @@
     "titleRequired": "Title is required",
     "budgetRequired": "Budget must be a number",
     "noClients": "You have no clients yet.",
-    "createClientFirst": "Create one first"
+    "createClientFirst": "Create one first",
+    "searchPlaceholder": "Search by title, client or description...",
+    "filterAll": "All",
+    "noResults": "No results",
+    "noResultsHint": "Try other terms or filters",
+    "unit": "project",
+    "unitPlural": "projects",
+    "status": "Status",
+    "save": "Save",
+    "cancel": "Cancel",
+    "descriptionPlaceholder": "Project description..."
   },
   "invoices": {
     "title": "Invoices",
@@ -114,7 +141,16 @@
     "amountRequired": "Amount must be a number",
     "dueDateRequired": "Due date is required",
     "noProjects": "You have no projects.",
-    "createProjectFirst": "Create one first"
+    "createProjectFirst": "Create one first",
+    "searchPlaceholder": "Search by client or project...",
+    "filterAll": "All",
+    "noResults": "No results",
+    "noResultsHint": "Try other terms or filters",
+    "unit": "invoice",
+    "unitPlural": "invoices",
+    "status": "Status",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "auth": {
     "loginTitle": "Sign in to your account",
@@ -140,6 +176,54 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "currency": "€"
+    "currency": "€",
+    "of": "of"
+  },
+  "stats": {
+    "title": "Statistics",
+    "subtitle": "Performance by client",
+    "totalClients": "Total clients",
+    "totalCollected": "Total collected",
+    "topClient": "Top client",
+    "breakdown": "Breakdown by client",
+    "sortedBy": "Sorted by revenue",
+    "noData": "No data yet",
+    "noDataDesc": "Add clients and create invoices to see statistics.",
+    "addClient": "Add client",
+    "noInvoicesYet": "No invoices linked to any client yet",
+    "invoiced": "invoiced",
+    "collected": "collected",
+    "pendingLabel": "pending",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pendingAlert": "You have {amount} € pending collection",
+    "pendingAlertSub": "Invoices with status \"Sent\" or \"Overdue\"",
+    "viewInvoices": "View invoices",
+    "projectUnit": "project",
+    "projectUnitPlural": "projects",
+    "invoiceUnit": "invoice",
+    "invoiceUnitPlural": "invoices"
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "This data will appear on your PDF invoices",
+    "personalData": "Personal details",
+    "businessData": "Business details",
+    "fullName": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "businessName": "Business name / Freelancer",
+    "taxId": "Tax ID",
+    "address": "Billing address",
+    "previewTitle": "Preview on invoices",
+    "save": "Save profile",
+    "saving": "Saving...",
+    "saved": "Profile saved successfully",
+    "fullNamePlaceholder": "John Smith",
+    "emailPlaceholder": "john@email.com",
+    "phonePlaceholder": "+1 555 000 0000",
+    "businessNamePlaceholder": "John Smith — Web Design",
+    "taxIdPlaceholder": "123456789",
+    "addressPlaceholder": "123 Main St, New York, NY 10001"
   }
 }

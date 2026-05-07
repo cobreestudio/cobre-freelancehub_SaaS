@@ -5,6 +5,13 @@ import { routing } from './i18n/routing'
 
 const handleI18n = createMiddleware(routing)
 
+function detectLocale(request: NextRequest): string {
+  const lang = request.headers.get('accept-language') || ''
+  if (/\ben\b/i.test(lang)) return 'en'
+  if (/\bfr\b/i.test(lang)) return 'fr'
+  return 'es'
+}
+
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
@@ -36,7 +43,7 @@ export default async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
   const localeMatch = pathname.match(/^\/(es|en|fr)/)
-  const locale = localeMatch ? localeMatch[1] : 'es'
+  const locale = localeMatch ? localeMatch[1] : detectLocale(request)
 
   if (!user && !isPublicPage) {
     const url = request.nextUrl.clone()

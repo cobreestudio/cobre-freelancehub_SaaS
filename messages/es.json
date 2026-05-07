@@ -272,6 +272,9 @@
     "phonePlaceholder": "+34 600 000 000",
     "businessNamePlaceholder": "Juan García — Diseño Web",
     "taxIdPlaceholder": "12345678A",
-    "addressPlaceholder": "Calle Mayor 1, 28001 Madrid"
+    "addressPlaceholder": "Calle Mayor 1, 28001 Madrid",
+    "paymentInfo": "Datos de pago",
+    "paymentInfoHint": "Aparecerá en el PDF de la factura",
+    "paymentInfoPlaceholder": "Transferencia bancaria\nIBAN: ES91 2100 0418 4502 0005 1332\nBizum: +34 600 000 000"
   }
 }

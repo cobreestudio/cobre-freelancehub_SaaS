@@ -272,6 +272,9 @@
     "phonePlaceholder": "+1 555 000 0000",
     "businessNamePlaceholder": "John Smith — Web Design",
     "taxIdPlaceholder": "123456789",
-    "addressPlaceholder": "123 Main St, New York, NY 10001"
+    "addressPlaceholder": "123 Main St, New York, NY 10001",
+    "paymentInfo": "Payment details",
+    "paymentInfoHint": "Will appear on your PDF invoices",
+    "paymentInfoPlaceholder": "Bank transfer\nIBAN: GB29 NWBK 6016 1331 9268 19\nPayPal: you@email.com"
   }
 }

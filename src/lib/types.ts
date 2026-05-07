@@ -44,4 +44,5 @@ export interface Profile {
   phone: string
   address: string
   taxId: string
+  paymentInfo?: string
 }

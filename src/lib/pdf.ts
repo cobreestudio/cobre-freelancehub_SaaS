@@ -97,11 +97,24 @@ export function generateInvoicePDF(invoice: Invoice, invoiceNumber: string, prof
   doc.setFont('helvetica', 'bold')
   doc.text(statusLabels[invoice.status] || 'BORRADOR', 33, finalY + 5.5, { align: 'center' })
 
+  // Datos de pago
+  if (profile?.paymentInfo) {
+    doc.setTextColor(30, 30, 30)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Datos de pago:', 14, finalY + 16)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.setTextColor(80, 80, 80)
+    const paymentLines = profile.paymentInfo.split('\n').filter(Boolean)
+    paymentLines.forEach((line, i) => doc.text(line, 14, finalY + 23 + i * 5))
+  }
+
   // Footer
   doc.setTextColor(180, 180, 180)
   doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
-  doc.text('Generado con FreelanceHub', 105, 287, { align: 'center' })
+  doc.text('Generado con Cobre', 105, 287, { align: 'center' })
 
   doc.save(`${invoiceNumber}-${invoice.clientName.replace(/\s+/g, '_')}.pdf`)
 }

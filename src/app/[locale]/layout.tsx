@@ -16,10 +16,23 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} className={geist.variable}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#4f46e5" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Cobre" />
+        <link rel="apple-touch-icon" href="/icons/icon.svg" />
+      </head>
       <body className="font-sans">
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'))
+          }
+        `}} />
       </body>
     </html>
   )

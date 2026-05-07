@@ -89,6 +89,7 @@ export const profileStore = {
       phone: data.phone || '',
       address: data.address || '',
       taxId: data.tax_id || '',
+      paymentInfo: data.payment_info || undefined,
     }
   },
   async save(profile: Profile) {
@@ -102,6 +103,7 @@ export const profileStore = {
       phone: profile.phone,
       address: profile.address,
       tax_id: profile.taxId,
+      payment_info: profile.paymentInfo || null,
       updated_at: new Date().toISOString(),
     })
   },

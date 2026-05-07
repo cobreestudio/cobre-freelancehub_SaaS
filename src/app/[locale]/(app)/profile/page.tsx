@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { profileStore } from '@/lib/store'
 import { Profile } from '@/lib/types'
-import { User, Building, Phone, MapPin, Hash, Mail, Save } from 'lucide-react'
+import { User, Building, Phone, MapPin, Hash, Mail, Save, CreditCard } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -153,6 +153,26 @@ export default function ProfilePage() {
           </div>
         </section>
 
+        {/* Métodos de pago */}
+        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="bg-amber-100 p-2 rounded-lg">
+              <CreditCard size={16} className="text-amber-600" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-800">{t('paymentInfo')}</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{t('paymentInfoHint')}</p>
+            </div>
+          </div>
+          <textarea
+            value={form.paymentInfo || ''}
+            onChange={e => set('paymentInfo', e.target.value)}
+            placeholder={t('paymentInfoPlaceholder')}
+            rows={4}
+            className="input resize-none w-full"
+          />
+        </section>
+
         {/* Preview */}
         {(form.fullName || form.businessName) && (
           <section className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5">
@@ -164,6 +184,12 @@ export default function ProfilePage() {
               {form.address && <p>{form.address}</p>}
               {form.email && <p>{form.email}</p>}
               {form.phone && <p>{form.phone}</p>}
+              {form.paymentInfo && (
+                <div className="mt-2 pt-2 border-t border-indigo-100">
+                  <p className="text-xs font-semibold text-indigo-400 mb-1">{t('paymentInfo')}</p>
+                  {form.paymentInfo.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+                </div>
+              )}
             </div>
           </section>
         )}

@@ -272,6 +272,9 @@
     "phonePlaceholder": "+33 6 00 00 00 00",
     "businessNamePlaceholder": "Jean Dupont — Design Web",
     "taxIdPlaceholder": "FR 00 123456789",
-    "addressPlaceholder": "1 rue de la Paix, 75001 Paris"
+    "addressPlaceholder": "1 rue de la Paix, 75001 Paris",
+    "paymentInfo": "Informations de paiement",
+    "paymentInfoHint": "Apparaîtra sur vos factures PDF",
+    "paymentInfoPlaceholder": "Virement bancaire\nIBAN: FR76 3000 6000 0112 3456 7890 189\nPayPal: vous@email.com"
   }
 }

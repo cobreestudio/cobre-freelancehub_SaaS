@@ -26,7 +26,18 @@
     "projectStatusSub": "Distribución actual",
     "noData": "Sin datos aún",
     "noDataHint": "Marca facturas como \"Cobrada\" para ver el gráfico",
-    "noProjects": "Sin proyectos aún"
+    "noProjects": "Sin proyectos aún",
+    "thisMonthRevenue": "Ingresos este mes",
+    "vsLastMonth": "vs mes anterior",
+    "historicRevenue": "Total histórico",
+    "newThisMonth": "nuevos este mes",
+    "monthlyComparison": "Comparativa mensual",
+    "paidInvoices": "Facturas cobradas",
+    "newClients": "Nuevos clientes",
+    "noChangeVsLastMonth": "Sin cambios vs mes anterior",
+    "previousMonth": "Mes anterior",
+    "currentMonth": "Este mes",
+    "noDataMonth": "Sin datos este mes"
   },
   "clients": {
     "title": "Clientes",

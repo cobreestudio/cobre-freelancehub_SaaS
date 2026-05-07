@@ -26,7 +26,18 @@
     "projectStatusSub": "Current distribution",
     "noData": "No data yet",
     "noDataHint": "Mark invoices as \"Paid\" to see the chart",
-    "noProjects": "No projects yet"
+    "noProjects": "No projects yet",
+    "thisMonthRevenue": "Revenue this month",
+    "vsLastMonth": "vs last month",
+    "historicRevenue": "All-time total",
+    "newThisMonth": "new this month",
+    "monthlyComparison": "Monthly comparison",
+    "paidInvoices": "Paid invoices",
+    "newClients": "New clients",
+    "noChangeVsLastMonth": "No change vs last month",
+    "previousMonth": "Last month",
+    "currentMonth": "This month",
+    "noDataMonth": "No data this month"
   },
   "clients": {
     "title": "Clients",

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Zap, Eye, EyeOff } from 'lucide-react'
+import { Coins, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -45,9 +45,9 @@ export default function LoginPage() {
       </div>
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-2xl mb-4">
-          <Zap size={22} className="text-white" />
+          <Coins size={22} className="text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">FreelanceHub</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Cobre</h1>
         <p className="text-gray-400 text-sm mt-1">Inicia sesión en tu cuenta</p>
       </div>
 

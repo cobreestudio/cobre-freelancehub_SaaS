@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
-import { Menu, Zap } from 'lucide-react'
+import { Menu, Coins } from 'lucide-react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -28,9 +28,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
           <div className="flex items-center gap-2">
             <div className="bg-indigo-500 p-1 rounded-md">
-              <Zap size={13} className="text-white" />
+              <Coins size={13} className="text-white" />
             </div>
-            <span className="font-bold text-sm">FreelanceHub</span>
+            <span className="font-bold text-sm">Cobre</span>
           </div>
         </header>
 

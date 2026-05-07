@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Users, FolderKanban, FileText, Zap, LogOut, UserCircle, X } from 'lucide-react'
+import { LayoutDashboard, Users, FolderKanban, FileText, Coins, LogOut, UserCircle, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import LanguageSwitcher from './LanguageSwitcher'
 import Link from 'next/link'
@@ -55,9 +55,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="bg-indigo-500 p-1.5 rounded-lg">
-              <Zap size={14} className="text-white" />
+              <Coins size={14} className="text-white" />
             </div>
-            <span className="text-base font-bold tracking-tight">FreelanceHub</span>
+            <span className="text-base font-bold tracking-tight">Cobre</span>
           </div>
           <p className="text-xs text-gray-500 pl-8">{t('tagline')}</p>
         </div>

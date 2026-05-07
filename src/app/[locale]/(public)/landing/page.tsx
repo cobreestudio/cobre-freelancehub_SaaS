@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Zap, Users, FolderKanban, FileText, CheckCircle, ArrowRight } from 'lucide-react'
+import { Coins, Users, FolderKanban, FileText, CheckCircle, ArrowRight } from 'lucide-react'
 
 export default function LandingPage() {
   const params = useParams()
@@ -44,9 +44,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-600 p-1.5 rounded-lg">
-              <Zap size={15} className="text-white" />
+              <Coins size={15} className="text-white" />
             </div>
-            <span className="font-bold text-gray-900">FreelanceHub</span>
+            <span className="font-bold text-gray-900">Cobre</span>
           </div>
           <div className="flex items-center gap-3">
             <Link href={`/${locale}/login`}
@@ -69,8 +69,8 @@ export default function LandingPage() {
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight max-w-3xl mb-6">
-          Tu negocio freelance,{' '}
-          <span className="text-indigo-600">organizado.</span>
+          Factura, cobra y{' '}
+          <span className="text-indigo-600">crece.</span>
         </h1>
 
         <p className="text-lg text-gray-500 max-w-xl mb-10 leading-relaxed">
@@ -138,7 +138,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-gray-100 py-6 px-6 text-center">
         <p className="text-sm text-gray-400">
-          © {new Date().getFullYear()} FreelanceHub — Hecho para freelancers
+          © {new Date().getFullYear()} Cobre — Hecho para freelancers
         </p>
       </footer>
 

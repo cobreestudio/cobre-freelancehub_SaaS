@@ -16,7 +16,8 @@ Reglas:
 - Formato: primero la línea "Asunto: ..." y luego el cuerpo del email
 - Escribe siempre en español
 - Máximo 150 palabras en el cuerpo
-- Finaliza con "Un saludo," dejando espacio para que el emisor firme`
+- Finaliza con "Un saludo," dejando espacio para que el emisor firme
+- NO uses markdown, asteriscos, negritas ni ningún tipo de formato especial. Solo texto plano.`
 
 export async function POST(req: NextRequest) {
   try {

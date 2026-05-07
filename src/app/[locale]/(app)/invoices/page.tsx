@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { invoiceStore, profileStore } from '@/lib/store'
+import { invoiceStore, profileStore, clientStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
 import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown, ImagePlus, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -34,6 +34,7 @@ export default function InvoicesPage() {
   const [editForm, setEditForm] = useState<{ amount: string; dueDate: string }>({ amount: '', dueDate: '' })
   const [aiInvoice, setAiInvoice] = useState<Invoice | null>(null)
   const [aiEmail, setAiEmail] = useState('')
+  const [aiClientEmail, setAiClientEmail] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const { toasts, show, dismiss } = useToast()
 
@@ -166,7 +167,11 @@ export default function InvoicesPage() {
   const handleAiCollections = async (invoice: Invoice) => {
     setAiInvoice(invoice)
     setAiEmail('')
+    setAiClientEmail('')
     setAiLoading(true)
+    const clients = await clientStore.getAll()
+    const client = clients.find(c => c.id === invoice.clientId)
+    if (client?.email) setAiClientEmail(client.email)
     try {
       const { createClient: createSupabaseClient } = await import('@/lib/supabase')
       const { data: { session } } = await createSupabaseClient().auth.getSession()
@@ -539,7 +544,8 @@ export default function InvoicesPage() {
                     const subject = subjectLine ? encodeURIComponent(subjectLine.replace('Asunto:', '').trim()) : encodeURIComponent('Recordatorio de pago')
                     const bodyStart = subjectLine ? lines.indexOf(subjectLine) + 1 : 0
                     const body = encodeURIComponent(lines.slice(bodyStart).join('\n').trim())
-                    window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, '_blank')
+                    const to = encodeURIComponent(aiClientEmail)
+                    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`, '_blank')
                   }}
                   className="flex items-center gap-1.5 bg-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-purple-700 transition-colors">
                   <Bell size={13} /> Abrir en email

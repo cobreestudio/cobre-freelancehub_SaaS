@@ -105,36 +105,42 @@ export default function InvoicesPage() {
   }
 
   const handleExportCSV = () => {
-    const headers = ['Número', 'Cliente', 'Proyecto', 'Base imponible', 'IVA%', 'IVA importe', 'IRPF%', 'IRPF importe', 'Total', 'Estado', 'Vencimiento', 'Fecha cobro']
-    const rows = invoices.map((inv, i) => {
+    const sep = ';'
+    const fmt = (n: number) => n.toFixed(2).replace('.', ',')
+    const statusLabel: Record<Invoice['status'], string> = {
+      draft: t('draft'), sent: t('sent'), paid: t('paid'), overdue: t('overdue'),
+    }
+    const headers = ['Número', 'Cliente', 'Proyecto', 'Base imponible', 'IVA%', 'IVA €', 'IRPF%', 'IRPF €', 'Total factura', 'Estado', 'Vencimiento', 'Fecha cobro']
+    const rows = filtered.map(inv => {
       const iva = inv.ivaRate ?? 21
       const irpf = inv.irpfRate ?? 0
       const ivaAmt = inv.amount * (iva / 100)
       const irpfAmt = inv.amount * (irpf / 100)
       return [
-        getInvoiceNumber(inv, i),
+        getInvoiceNumber(inv, invoices.indexOf(inv)),
         inv.clientName,
         inv.projectTitle,
-        inv.amount.toFixed(2),
+        fmt(inv.amount),
         iva,
-        ivaAmt.toFixed(2),
+        fmt(ivaAmt),
         irpf,
-        irpfAmt.toFixed(2),
-        (inv.amount + ivaAmt - irpfAmt).toFixed(2),
-        inv.status,
+        fmt(irpfAmt),
+        fmt(inv.amount + ivaAmt - irpfAmt),
+        statusLabel[inv.status],
         inv.dueDate,
         inv.paidAt ? inv.paidAt.split('T')[0] : '',
       ]
     })
-    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(sep)).join('\n')
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `facturas-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
     a.click()
-    URL.revokeObjectURL(url)
-    show(t('exportCsv'))
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 100)
+    show(`${t('exportCsv')} · ${filtered.length} ${filtered.length === 1 ? t('unit') : t('unitPlural')}`)
   }
 
   const handleDuplicate = async (invoice: Invoice) => {

@@ -200,6 +200,20 @@ export default function ProjectsPage() {
                     {invoices.filter(i => i.projectId === project.id).length === 0 && project.status !== 'cancelled' && (
                       <span className="text-xs text-gray-300 font-medium mt-0.5 inline-block">sin facturar</span>
                     )}
+                    {(() => {
+                      const pi = invoices.filter(i => i.projectId === project.id)
+                      const allPaid = pi.length > 0 && pi.every(i => i.status === 'paid')
+                      if (!allPaid || project.status === 'completed' || project.status === 'cancelled') return null
+                      return (
+                        <button onClick={async () => {
+                          await projectStore.update({ ...project, status: 'completed' })
+                          projectStore.getAll().then(setProjects)
+                          show(t('updated'))
+                        }} className="text-xs text-emerald-600 font-semibold mt-0.5 hover:underline block">
+                          ✓ Marcar como completado
+                        </button>
+                      )
+                    })()}
                     {project.budget > 0 && (() => {
                       const invoiced = invoices.filter(i => i.projectId === project.id).reduce((s, i) => s + i.amount, 0)
                       const pct = Math.min(100, Math.round((invoiced / project.budget) * 100))

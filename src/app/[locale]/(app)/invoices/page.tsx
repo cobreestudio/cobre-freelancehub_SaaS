@@ -220,7 +220,10 @@ export default function InvoicesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-mono font-bold text-gray-300">{getInvoiceNumber(invoice, invoices.indexOf(invoice))}</span>
+                    <span onClick={() => { navigator.clipboard.writeText(getInvoiceNumber(invoice, invoices.indexOf(invoice))); show('Número copiado') }}
+                      className="text-xs font-mono font-bold text-gray-300 cursor-pointer hover:text-indigo-400 transition-colors" title="Copiar número">
+                      {getInvoiceNumber(invoice, invoices.indexOf(invoice))}
+                    </span>
                     <span className="font-semibold text-gray-900 truncate">{invoice.clientName}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusStyle[invoice.status]}`}>
                       {t(invoice.status)}

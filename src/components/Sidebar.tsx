@@ -19,11 +19,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const locale = useLocale()
   const t = useTranslations('sidebar')
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [overdueCount, setOverdueCount] = useState(0)
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => {
       setUserEmail(data.user?.email ?? null)
     })
+    import('@/lib/store').then(({ invoiceStore }) =>
+      invoiceStore.getAll().then(inv =>
+        setOverdueCount(inv.filter(i => i.status === 'overdue').length)
+      )
+    )
   }, [])
 
   const links = [
@@ -79,7 +85,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
             }`}>
             <Icon size={17} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {href.endsWith('/invoices') && overdueCount > 0 && (
+              <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
+                {overdueCount}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

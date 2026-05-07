@@ -207,10 +207,15 @@ export default function ClientsPage() {
                         {t(client.status)}
                       </span>
                       {(() => {
-                        const count = invoices.filter(i => i.clientId === client.id).length
-                        return count > 0 ? (
-                          <span className="text-xs text-gray-300 font-medium shrink-0">{count} {count === 1 ? ti('unit') : ti('unitPlural')}</span>
-                        ) : null
+                        const ci = invoices.filter(i => i.clientId === client.id)
+                        const count = ci.length
+                        if (count === 0) return null
+                        const last = ci.sort((a, b) => b.createdAt > a.createdAt ? 1 : -1)[0]
+                        return (
+                          <span className="text-xs text-gray-300 font-medium shrink-0">
+                            {count} {count === 1 ? ti('unit') : ti('unitPlural')} · {new Date(last.createdAt).toLocaleDateString('es-ES')}
+                          </span>
+                        )
                       })()}
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-400">

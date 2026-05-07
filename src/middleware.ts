@@ -8,6 +8,10 @@ const handleI18n = createMiddleware(routing)
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'TU_URL_AQUI') {
     return handleI18n(request)
   }

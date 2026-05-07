@@ -59,13 +59,13 @@ export default function InvoicesPage() {
   const handleDownloadPDF = async (invoice: Invoice, index: number) => {
     setDownloading(invoice.id)
     const { generateInvoicePDF } = await import('@/lib/pdf')
-    generateInvoicePDF(invoice, invoiceNumber(index), profile)
+    generateInvoicePDF(invoice, getInvoiceNumber(invoice, index), profile)
     setDownloading(null)
     show(t('pdfDownloaded'))
   }
 
   const handleReminder = (invoice: Invoice) => {
-    const subject = encodeURIComponent(`Recordatorio de pago — Factura ${invoiceNumber(invoices.indexOf(invoice))}`)
+    const subject = encodeURIComponent(`Recordatorio de pago — Factura ${getInvoiceNumber(invoice, invoices.indexOf(invoice))}`)
     const body = encodeURIComponent(
       `Hola ${invoice.clientName},\n\nTe recuerdo que tienes pendiente el pago de la factura correspondiente al proyecto "${invoice.projectTitle}" por un importe de ${invoice.amount.toLocaleString('es-ES')} €.\n\nFecha de vencimiento: ${new Date(invoice.dueDate).toLocaleDateString('es-ES')}\n\nQuedo a tu disposición para cualquier consulta.\n\nUn saludo.`
     )
@@ -75,7 +75,8 @@ export default function InvoicesPage() {
 
   const paid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
   const pending = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0)
-  const invoiceNumber = (index: number) => `FAC-${String(index + 1).padStart(3, '0')}`
+  const getInvoiceNumber = (invoice: Invoice, index: number) =>
+    invoice.invoiceNumber || `FAC-${String(index + 1).padStart(3, '0')}`
 
   const filterBtns: { label: string; value: StatusFilter }[] = [
     { label: t('filterAll'), value: 'all' },
@@ -174,7 +175,7 @@ export default function InvoicesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-mono font-bold text-gray-300">{invoiceNumber(invoices.indexOf(invoice))}</span>
+                    <span className="text-xs font-mono font-bold text-gray-300">{getInvoiceNumber(invoice, invoices.indexOf(invoice))}</span>
                     <span className="font-semibold text-gray-900 truncate">{invoice.clientName}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusStyle[invoice.status]}`}>
                       {t(invoice.status)}

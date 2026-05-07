@@ -23,6 +23,7 @@ export interface Project {
 
 export interface Invoice {
   id: string
+  invoiceNumber?: string
   projectId: string
   clientId: string
   clientName: string

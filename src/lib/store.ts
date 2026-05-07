@@ -53,12 +53,19 @@ export const invoiceStore = {
     const userId = await getUserId()
     if (!userId) return []
     const { data } = await db().from('invoices').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    return (data || []).map(r => ({ id: r.id, projectId: r.project_id, clientId: r.client_id, clientName: r.client_name, projectTitle: r.project_title, amount: r.amount, status: r.status, dueDate: r.due_date, createdAt: r.created_at }))
+    return (data || []).map(r => ({ id: r.id, invoiceNumber: r.invoice_number || undefined, projectId: r.project_id, clientId: r.client_id, clientName: r.client_name, projectTitle: r.project_title, amount: r.amount, status: r.status, dueDate: r.due_date, createdAt: r.created_at }))
+  },
+  async nextNumber(): Promise<string> {
+    const userId = await getUserId()
+    if (!userId) return `FAC-${new Date().getFullYear()}-001`
+    const { count } = await db().from('invoices').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+    const year = new Date().getFullYear()
+    return `FAC-${year}-${String((count || 0) + 1).padStart(3, '0')}`
   },
   async add(invoice: Invoice) {
     const userId = await getUserId()
     if (!userId) return
-    await db().from('invoices').insert({ id: invoice.id, user_id: userId, project_id: invoice.projectId, client_id: invoice.clientId, client_name: invoice.clientName, project_title: invoice.projectTitle, amount: invoice.amount, status: invoice.status, due_date: invoice.dueDate, created_at: invoice.createdAt })
+    await db().from('invoices').insert({ id: invoice.id, invoice_number: invoice.invoiceNumber || null, user_id: userId, project_id: invoice.projectId, client_id: invoice.clientId, client_name: invoice.clientName, project_title: invoice.projectTitle, amount: invoice.amount, status: invoice.status, due_date: invoice.dueDate, created_at: invoice.createdAt })
   },
   async update(invoice: Invoice) {
     await db().from('invoices').update({ amount: invoice.amount, status: invoice.status, due_date: invoice.dueDate }).eq('id', invoice.id)

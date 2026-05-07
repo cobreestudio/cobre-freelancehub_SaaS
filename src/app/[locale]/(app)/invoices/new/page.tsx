@@ -37,8 +37,10 @@ export default function NewInvoicePage() {
 
     setSaving(true)
     const project = projects.find(p => p.id === form.projectId)!
+    const invoiceNumber = await invoiceStore.nextNumber()
     const invoice: Invoice = {
       id: crypto.randomUUID(),
+      invoiceNumber,
       projectId: form.projectId,
       clientId: project.clientId,
       clientName: project.clientName,

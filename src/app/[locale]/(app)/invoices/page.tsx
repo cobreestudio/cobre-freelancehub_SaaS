@@ -58,7 +58,8 @@ export default function InvoicesPage() {
   }
 
   const handleStatusChange = async (invoice: Invoice, status: Invoice['status']) => {
-    await invoiceStore.update({ ...invoice, status })
+    const paidAt = status === 'paid' ? new Date().toISOString() : undefined
+    await invoiceStore.update({ ...invoice, status, paidAt })
     invoiceStore.getAll().then(setInvoices)
     show(t('statusChanged', { status: t(status) }))
   }
@@ -204,10 +205,17 @@ export default function InvoicesPage() {
                       <Euro size={10} />
                       <span className="font-bold text-gray-700 text-sm">{invoice.amount.toLocaleString('es-ES')} €</span>
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar size={10} />
-                      {t('dueDate')} {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
-                    </span>
+                    {invoice.paidAt ? (
+                      <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                        <Calendar size={10} />
+                        {t('paid')} {new Date(invoice.paidAt).toLocaleDateString('es-ES')}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Calendar size={10} />
+                        {t('dueDate')} {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
+                      </span>
+                    )}
                   </div>
                   <div className="flex gap-1">
                     {(['draft', 'sent', 'paid', 'overdue'] as Invoice['status'][]).map(s => (

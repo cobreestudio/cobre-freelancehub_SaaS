@@ -32,6 +32,7 @@ export interface Invoice {
   amount: number
   status: 'draft' | 'sent' | 'paid' | 'overdue'
   dueDate: string
+  paidAt?: string
   createdAt: string
 }
 

@@ -5,8 +5,10 @@ import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Coins, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function RegisterPage() {
+  const t = useTranslations('auth')
   const params = useParams()
   const locale = params.locale as string
   const [form, setForm] = useState({ email: '', password: '', confirm: '' })
@@ -18,8 +20,8 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (form.password !== form.confirm) { setError('Las contraseñas no coinciden'); return }
-    if (form.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
+    if (form.password !== form.confirm) { setError(t('passwordMismatch')); return }
+    if (form.password.length < 6) { setError(t('passwordTooShort')); return }
 
     setLoading(true)
     setError('')
@@ -49,12 +51,12 @@ export default function RegisterPage() {
         <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-2xl mb-4">
           <CheckCircle size={24} className="text-emerald-600" />
         </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">¡Cuenta creada!</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">{t('accountCreated')}</h1>
         <p className="text-gray-500 text-sm mb-6">
-          Hemos enviado un enlace de confirmación a <strong>{form.email}</strong>. Revisa tu bandeja de entrada y pulsa el enlace para activar tu cuenta.
+          {t('confirmationSent', { email: form.email })}
         </p>
         <Link href={`/${locale}/login`} className="text-indigo-600 text-sm font-medium hover:underline">
-          Volver al login
+          {t('backToLogin')}
         </Link>
       </div>
     )
@@ -64,7 +66,7 @@ export default function RegisterPage() {
     <div className="w-full max-w-sm">
       <div className="text-center mb-4">
         <Link href={`/${locale}/landing`} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
-          ← Volver al inicio
+          {t('backToHome')}
         </Link>
       </div>
       <div className="text-center mb-8">
@@ -72,7 +74,7 @@ export default function RegisterPage() {
           <Coins size={22} className="text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Cobre</h1>
-        <p className="text-gray-400 text-sm mt-1">Crea tu cuenta gratuita</p>
+        <p className="text-gray-400 text-sm mt-1">{t('registerTitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
@@ -81,19 +83,19 @@ export default function RegisterPage() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('email')}</label>
           <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-            placeholder="tu@email.com" required autoFocus className="input" />
+            placeholder={t('emailPlaceholder')} required autoFocus className="input" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('password')}</label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t('minCharsPlaceholder')}
               required
               className="input pr-10"
             />
@@ -105,13 +107,13 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmar contraseña</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('confirmPassword')}</label>
           <div className="relative">
             <input
               type={showConfirm ? 'text' : 'password'}
               value={form.confirm}
               onChange={e => setForm({ ...form, confirm: e.target.value })}
-              placeholder="Repite la contraseña"
+              placeholder={t('repeatPasswordPlaceholder')}
               required
               className="input pr-10"
             />
@@ -125,14 +127,14 @@ export default function RegisterPage() {
         <button type="submit" disabled={loading}
           className="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60 mt-2"
         >
-          {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+          {loading ? t('registering') : t('register')}
         </button>
       </form>
 
       <p className="text-center text-sm text-gray-400 mt-4">
-        ¿Ya tienes cuenta?{' '}
+        {t('haveAccount')}{' '}
         <Link href={`/${locale}/login`} className="text-indigo-600 font-medium hover:underline">
-          Inicia sesión
+          {t('loginLink')}
         </Link>
       </p>
     </div>

@@ -5,8 +5,10 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Coins, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function LoginPage() {
+  const t = useTranslations('auth')
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as string
@@ -27,7 +29,7 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setError('Email o contraseña incorrectos')
+      setError(t('wrongCredentials'))
       setLoading(false)
       return
     }
@@ -40,7 +42,7 @@ export default function LoginPage() {
     <div className="w-full max-w-sm">
       <div className="text-center mb-4">
         <Link href={`/${locale}/landing`} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
-          ← Volver al inicio
+          {t('backToHome')}
         </Link>
       </div>
       <div className="text-center mb-8">
@@ -48,7 +50,7 @@ export default function LoginPage() {
           <Coins size={22} className="text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Cobre</h1>
-        <p className="text-gray-400 text-sm mt-1">Inicia sesión en tu cuenta</p>
+        <p className="text-gray-400 text-sm mt-1">{t('loginTitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
@@ -57,12 +59,12 @@ export default function LoginPage() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('email')}</label>
           <input
             type="email"
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            placeholder="tu@email.com"
+            placeholder={t('emailPlaceholder')}
             required
             autoFocus
             className="input"
@@ -70,13 +72,13 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('password')}</label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
+              placeholder={t('passwordPlaceholder')}
               required
               className="input pr-10"
             />
@@ -93,14 +95,14 @@ export default function LoginPage() {
         <button type="submit" disabled={loading}
           className="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60 mt-2"
         >
-          {loading ? 'Entrando...' : 'Iniciar sesión'}
+          {loading ? t('loggingIn') : t('login')}
         </button>
       </form>
 
       <p className="text-center text-sm text-gray-400 mt-4">
-        ¿No tienes cuenta?{' '}
+        {t('noAccount')}{' '}
         <Link href={`/${locale}/register`} className="text-indigo-600 font-medium hover:underline">
-          Regístrate gratis
+          {t('registerLink')}
         </Link>
       </p>
     </div>

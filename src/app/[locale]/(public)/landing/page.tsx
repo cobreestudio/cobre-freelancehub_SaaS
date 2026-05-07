@@ -3,38 +3,20 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Coins, Users, FolderKanban, FileText, CheckCircle, ArrowRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function LandingPage() {
+  const t = useTranslations('landing')
   const params = useParams()
   const locale = params.locale as string
 
   const features = [
-    {
-      icon: Users,
-      color: 'bg-blue-100 text-blue-600',
-      title: 'Gestión de clientes',
-      desc: 'Centraliza toda la información de tus clientes. Contacto, empresa y estado en un vistazo.',
-    },
-    {
-      icon: FolderKanban,
-      color: 'bg-indigo-100 text-indigo-600',
-      title: 'Control de proyectos',
-      desc: 'Crea proyectos, asigna presupuesto y lleva el seguimiento del estado en tiempo real.',
-    },
-    {
-      icon: FileText,
-      color: 'bg-emerald-100 text-emerald-600',
-      title: 'Facturas en PDF',
-      desc: 'Genera facturas profesionales en un clic y envía recordatorios de cobro automáticamente.',
-    },
+    { icon: Users,        color: 'bg-blue-100 text-blue-600',    title: t('feature1Title'), desc: t('feature1Desc') },
+    { icon: FolderKanban, color: 'bg-indigo-100 text-indigo-600', title: t('feature2Title'), desc: t('feature2Desc') },
+    { icon: FileText,     color: 'bg-emerald-100 text-emerald-600', title: t('feature3Title'), desc: t('feature3Desc') },
   ]
 
-  const perks = [
-    '100% gratuito, sin límites',
-    'Sin tarjeta de crédito',
-    'Listo en menos de 1 minuto',
-    'Datos seguros con Supabase',
-  ]
+  const perks = [t('perk1'), t('perk2'), t('perk3'), t('perk4')]
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -51,11 +33,11 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <Link href={`/${locale}/login`}
               className="text-sm text-gray-500 hover:text-gray-800 font-medium transition-colors">
-              Iniciar sesión
+              {t('login')}
             </Link>
             <Link href={`/${locale}/register`}
               className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
-              Crear cuenta gratis
+              {t('createFreeAccount')}
             </Link>
           </div>
         </div>
@@ -65,27 +47,27 @@ export default function LandingPage() {
       <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-24">
         <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 border border-indigo-100">
           <Coins size={11} />
-          Para freelancers y autónomos
+          {t('badge')}
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight max-w-3xl mb-6">
-          Factura, cobra y{' '}
-          <span className="text-indigo-600">crece.</span>
+          {t('heroTitle')}{' '}
+          <span className="text-indigo-600">{t('heroHighlight')}</span>
         </h1>
 
         <p className="text-lg text-gray-500 max-w-xl mb-10 leading-relaxed">
-          Gestiona clientes, proyectos y facturas desde un solo lugar. Sin complicaciones, sin costes.
+          {t('heroSubtitle')}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-12">
           <Link href={`/${locale}/register`}
             className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-7 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 text-base">
-            Empieza gratis
+            {t('startFree')}
             <ArrowRight size={17} />
           </Link>
           <Link href={`/${locale}/login`}
             className="flex items-center justify-center gap-2 border border-gray-200 text-gray-600 px-7 py-3.5 rounded-xl font-semibold hover:bg-gray-50 transition-colors text-base">
-            Ya tengo cuenta
+            {t('alreadyHaveAccount')}
           </Link>
         </div>
 
@@ -103,8 +85,8 @@ export default function LandingPage() {
       <section className="bg-gray-50 border-t border-gray-100 py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Todo lo que necesitas</h2>
-            <p className="text-gray-500">Diseñado para que pases menos tiempo administrando y más tiempo creando.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">{t('featuresTitle')}</h2>
+            <p className="text-gray-500">{t('featuresSubtitle')}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {features.map(({ icon: Icon, color, title, desc }) => (
@@ -124,12 +106,12 @@ export default function LandingPage() {
       <section className="py-20 px-6 text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-            ¿Listo para empezar?
+            {t('ctaTitle')}
           </h2>
-          <p className="text-gray-500 mb-8">Crea tu cuenta en menos de un minuto. Sin tarjeta de crédito.</p>
+          <p className="text-gray-500 mb-8">{t('ctaSubtitle')}</p>
           <Link href={`/${locale}/register`}
             className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 text-base">
-            Crear cuenta gratis
+            {t('createFreeAccount')}
             <ArrowRight size={17} />
           </Link>
         </div>
@@ -138,7 +120,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-gray-100 py-6 px-6 text-center">
         <p className="text-sm text-gray-400">
-          © {new Date().getFullYear()} Cobre — Hecho para freelancers
+          © {new Date().getFullYear()} Cobre — {t('footer')}
         </p>
       </footer>
 

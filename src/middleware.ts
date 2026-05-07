@@ -12,7 +12,7 @@ export default async function middleware(request: NextRequest) {
     return handleI18n(request)
   }
 
-  const isAuthPage = /^\/(es|en|fr)\/(login|register)/.test(pathname)
+  const isPublicPage = /^\/(es|en|fr)\/(login|register|landing)$/.test(pathname)
   let response = handleI18n(request)
 
   const supabase = createServerClient(
@@ -34,13 +34,13 @@ export default async function middleware(request: NextRequest) {
   const localeMatch = pathname.match(/^\/(es|en|fr)/)
   const locale = localeMatch ? localeMatch[1] : 'es'
 
-  if (!user && !isAuthPage) {
+  if (!user && !isPublicPage) {
     const url = request.nextUrl.clone()
-    url.pathname = `/${locale}/login`
+    url.pathname = `/${locale}/landing`
     return NextResponse.redirect(url)
   }
 
-  if (user && isAuthPage) {
+  if (user && isPublicPage) {
     const url = request.nextUrl.clone()
     url.pathname = `/${locale}`
     return NextResponse.redirect(url)

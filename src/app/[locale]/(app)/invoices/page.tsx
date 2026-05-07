@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown, ImagePlus } from 'lucide-react'
+import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown, ImagePlus, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -32,6 +32,9 @@ export default function InvoicesPage() {
   const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('createdAt')
   const [editId, setEditId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<{ amount: string; dueDate: string }>({ amount: '', dueDate: '' })
+  const [aiInvoice, setAiInvoice] = useState<Invoice | null>(null)
+  const [aiEmail, setAiEmail] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
@@ -158,6 +161,32 @@ export default function InvoicesPage() {
     invoiceStore.getAll().then(data => { setInvoices(data); setPlanBlocked(false) })
     setDuplicating(null)
     show(t('duplicated'))
+  }
+
+  const handleAiCollections = async (invoice: Invoice) => {
+    setAiInvoice(invoice)
+    setAiEmail('')
+    setAiLoading(true)
+    try {
+      const { createClient: createSupabaseClient } = await import('@/lib/supabase')
+      const { data: { session } } = await createSupabaseClient().auth.getSession()
+      if (!session) { setAiLoading(false); return }
+      const res = await fetch('/api/ai/collections', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoice }),
+      })
+      if (res.status === 403) {
+        setAiEmail('__pro_required__')
+        setAiLoading(false)
+        return
+      }
+      const data = await res.json()
+      setAiEmail(data.email || '')
+    } catch {
+      setAiEmail('Error al generar el email. Inténtalo de nuevo.')
+    }
+    setAiLoading(false)
   }
 
   const handleReminder = (invoice: Invoice) => {
@@ -381,6 +410,12 @@ export default function InvoicesPage() {
                     className="hidden sm:flex p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors">
                     <Bell size={14} />
                   </button>
+                  {(invoice.status === 'sent' || invoice.status === 'overdue') && (
+                    <button onClick={() => handleAiCollections(invoice)} title="Redactar email con IA"
+                      className="p-2 text-gray-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-colors">
+                      <Sparkles size={14} />
+                    </button>
+                  )}
                   <button onClick={() => handleDownloadPDF(invoice, invoices.indexOf(invoice))} disabled={downloading === invoice.id}
                     title="Descargar PDF"
                     className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">
@@ -428,6 +463,86 @@ export default function InvoicesPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* AI Collections Modal */}
+      {aiInvoice && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={e => { if (e.target === e.currentTarget) { setAiInvoice(null); setAiEmail('') } }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-purple-100 p-1.5 rounded-lg">
+                  <Sparkles size={15} className="text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Email de cobro con IA</p>
+                  <p className="text-xs text-gray-400 truncate max-w-[240px]">{aiInvoice.clientName} · {aiInvoice.amount.toLocaleString('es-ES')} €</p>
+                </div>
+              </div>
+              <button onClick={() => { setAiInvoice(null); setAiEmail('') }}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {aiLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-gray-500">Generando email personalizado…</p>
+                </div>
+              ) : aiEmail === '__pro_required__' ? (
+                <div className="text-center py-10">
+                  <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles size={20} className="text-purple-400" />
+                  </div>
+                  <p className="font-semibold text-gray-900 mb-1">Función Pro</p>
+                  <p className="text-sm text-gray-500 mb-5">Los emails de cobro con IA están disponibles en el plan Pro.</p>
+                  <a href="/billing"
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Activar plan Pro
+                  </a>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-gray-400 mb-2 font-medium">Revisa y edita el email antes de enviarlo:</p>
+                  <textarea
+                    value={aiEmail}
+                    onChange={e => setAiEmail(e.target.value)}
+                    rows={12}
+                    className="w-full text-sm font-mono text-gray-700 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none leading-relaxed"
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Modal footer */}
+            {!aiLoading && aiEmail && aiEmail !== '__pro_required__' && (
+              <div className="px-5 py-3 border-t border-gray-100 flex gap-2 justify-end">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(aiEmail); show('Email copiado al portapapeles') }}
+                  className="flex items-center gap-1.5 border border-gray-200 text-gray-600 text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
+                  <Copy size={13} /> Copiar
+                </button>
+                <button
+                  onClick={() => {
+                    const lines = aiEmail.split('\n')
+                    const subjectLine = lines.find(l => l.startsWith('Asunto:'))
+                    const subject = subjectLine ? encodeURIComponent(subjectLine.replace('Asunto:', '').trim()) : encodeURIComponent('Recordatorio de pago')
+                    const bodyStart = subjectLine ? lines.indexOf(subjectLine) + 1 : 0
+                    const body = encodeURIComponent(lines.slice(bodyStart).join('\n').trim())
+                    window.open(`mailto:?subject=${subject}&body=${body}`)
+                  }}
+                  className="flex items-center gap-1.5 bg-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-purple-700 transition-colors">
+                  <Bell size={13} /> Abrir en email
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

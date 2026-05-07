@@ -11,17 +11,60 @@ import { FREE_LIMITS } from '@/lib/plans'
 
 type Step = 'upload' | 'analyzing' | 'review'
 
-interface ParsedData {
-  clientName: string | null
-  projectTitle: string | null
-  items: InvoiceItem[]
+interface Extracted {
   ivaRate: number
   irpfRate: number
   dueDate: string | null
-  invoiceNumber: string | null
+  amount: number
 }
 
 const newItem = (): InvoiceItem => ({ description: '', quantity: 1, unitPrice: 0 })
+
+// ── OCR text parsers ────────────────────────────────────────────────────────
+
+function parseAmounts(text: string): number[] {
+  const results: number[] = []
+  // Spanish: 1.500,00
+  for (const m of text.matchAll(/\b(\d{1,3}(?:\.\d{3})*,\d{2})\b/g)) {
+    const n = parseFloat(m[1].replace(/\./g, '').replace(',', '.'))
+    if (!isNaN(n) && n > 0) results.push(n)
+  }
+  // International: 1,500.00 or 1500.00
+  if (results.length === 0) {
+    for (const m of text.matchAll(/\b(\d+\.\d{2})\b/g)) {
+      const n = parseFloat(m[1])
+      if (!isNaN(n) && n > 0) results.push(n)
+    }
+  }
+  return [...new Set(results)].sort((a, b) => a - b)
+}
+
+function parseOCRText(text: string): Extracted {
+  const ivaMatch = text.match(/(?:IVA|VAT|TVA)[^\d]*(\d{1,2})\s*%/i)
+    ?? text.match(/(\d{1,2})\s*%\s*(?:IVA|VAT|TVA)/i)
+  const ivaRate = ivaMatch ? Math.min(100, parseInt(ivaMatch[1])) : 21
+
+  const irpfMatch = text.match(/IRPF[^\d]*(\d{1,2})\s*%/i)
+    ?? text.match(/(\d{1,2})\s*%\s*IRPF/i)
+  const irpfRate = irpfMatch ? Math.min(100, parseInt(irpfMatch[1])) : 0
+
+  // Dates dd/mm/yyyy or dd-mm-yyyy
+  const dateMatches = [...text.matchAll(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/g)]
+  const dates = dateMatches.map(m => `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`)
+
+  const amounts = parseAmounts(text)
+  // Best guess for base imponible: smallest amount above 1€ that isn't an obvious IVA % number
+  const baseAmount = amounts.find(a => a >= 1) ?? 0
+
+  return {
+    ivaRate,
+    irpfRate,
+    dueDate: dates[dates.length - 1] ?? null,
+    amount: baseAmount,
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 
 export default function ImportInvoicePage() {
   const t = useTranslations('invoices')
@@ -30,7 +73,7 @@ export default function ImportInvoicePage() {
 
   const [step, setStep] = useState<Step>('upload')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [progress, setProgress] = useState(0)
   const [parseError, setParseError] = useState('')
   const [saving, setSaving] = useState(false)
   const [blocked, setBlocked] = useState(false)
@@ -39,7 +82,6 @@ export default function ImportInvoicePage() {
   const [clients, setClients] = useState<Client[]>([])
   const [projects, setProjects] = useState<Project[]>([])
 
-  // Form state
   const [clientId, setClientId] = useState('')
   const [projectId, setProjectId] = useState('')
   const [items, setItems] = useState<InvoiceItem[]>([newItem()])
@@ -48,7 +90,6 @@ export default function ImportInvoicePage() {
   const [applyIrpf, setApplyIrpf] = useState(false)
   const [dueDate, setDueDate] = useState('')
   const [status, setStatus] = useState<Invoice['status']>('sent')
-  const [extractedClient, setExtractedClient] = useState<string | null>(null)
   const [error, setError] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -57,7 +98,6 @@ export default function ImportInvoicePage() {
     const nextMonth = new Date()
     nextMonth.setMonth(nextMonth.getMonth() + 1)
     setDueDate(nextMonth.toISOString().split('T')[0])
-
     Promise.all([clientStore.getAll(), projectStore.getAll(), profileStore.get(), invoiceStore.getAll()])
       .then(([cls, projs, prof, invs]) => {
         setClients(cls)
@@ -70,31 +110,31 @@ export default function ImportInvoicePage() {
     if (!file.type.startsWith('image/')) { setParseError('Formato no válido. Usa JPG, PNG o WebP.'); return }
     if (file.size > 10 * 1024 * 1024) { setParseError('La imagen es demasiado grande (máx. 10 MB).'); return }
 
-    setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
     setParseError('')
+    setProgress(0)
     setStep('analyzing')
 
-    const formData = new FormData()
-    formData.append('image', file)
-
     try {
-      const res = await fetch('/api/parse-invoice', { method: 'POST', body: formData })
-      const data: ParsedData & { error?: string } = await res.json()
+      const { createWorker } = await import('tesseract.js')
+      const worker = await createWorker(['spa', 'eng'], 1, {
+        logger: (m: { status: string; progress: number }) => {
+          if (m.status === 'recognizing text') setProgress(Math.round(m.progress * 100))
+        },
+      })
+      const { data: { text } } = await worker.recognize(file)
+      await worker.terminate()
 
-      if (!res.ok || data.error) {
-        setParseError(t('parseError'))
-        setStep('upload')
-        return
-      }
+      const extracted = parseOCRText(text)
 
-      setExtractedClient(data.clientName)
-      if (data.items && data.items.length > 0) setItems(data.items)
-      if (data.ivaRate) setIvaRate(data.ivaRate)
-      if (data.irpfRate && data.irpfRate > 0) { setIrpfRate(data.irpfRate); setApplyIrpf(true) }
-      if (data.dueDate) setDueDate(data.dueDate)
+      if (extracted.ivaRate) setIvaRate(extracted.ivaRate)
+      if (extracted.irpfRate > 0) { setIrpfRate(extracted.irpfRate); setApplyIrpf(true) }
+      if (extracted.dueDate) setDueDate(extracted.dueDate)
+      if (extracted.amount > 0) setItems([{ description: '', quantity: 1, unitPrice: extracted.amount }])
+
       setStep('review')
-    } catch {
+    } catch (err) {
+      console.error('[tesseract]', err)
       setParseError(t('parseError'))
       setStep('upload')
     }
@@ -107,10 +147,7 @@ export default function ImportInvoicePage() {
     if (file) processFile(file)
   }, [processFile])
 
-  const filteredProjects = projectId ? projects : clientId
-    ? projects.filter(p => p.clientId === clientId)
-    : projects
-
+  const filteredProjects = clientId ? projects.filter(p => p.clientId === clientId) : projects
   const selectedProject = projects.find(p => p.id === projectId)
 
   const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0)
@@ -137,7 +174,7 @@ export default function ImportInvoicePage() {
     setSaving(true)
     const project = projects.find(p => p.id === projectId)!
     const invoiceNumber = await invoiceStore.nextNumber()
-    const invoice: Invoice = {
+    await invoiceStore.add({
       id: crypto.randomUUID(),
       invoiceNumber,
       projectId,
@@ -151,8 +188,7 @@ export default function ImportInvoicePage() {
       status,
       dueDate,
       createdAt: new Date().toISOString(),
-    }
-    await invoiceStore.add(invoice)
+    })
     router.push('/invoices')
   }
 
@@ -187,7 +223,7 @@ export default function ImportInvoicePage() {
         </div>
       </div>
 
-      {/* Upload / Analyzing step */}
+      {/* Upload / Analyzing */}
       {(step === 'upload' || step === 'analyzing') && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
@@ -198,20 +234,27 @@ export default function ImportInvoicePage() {
             onDragOver={e => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-2xl p-16 text-center transition-colors cursor-pointer ${
+            className={`border-2 border-dashed rounded-2xl p-16 text-center transition-colors ${
               step === 'analyzing'
                 ? 'border-indigo-200 bg-indigo-50/50 cursor-default'
                 : dragging
-                  ? 'border-indigo-400 bg-indigo-50'
-                  : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                  ? 'border-indigo-400 bg-indigo-50 cursor-copy'
+                  : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 cursor-pointer'
             }`}
           >
             {step === 'analyzing' ? (
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-4">
                 <Loader2 size={32} className="text-indigo-500 animate-spin" />
-                <p className="font-medium text-indigo-700">{t('analyzing')}</p>
+                <div className="w-full max-w-xs">
+                  <p className="font-medium text-indigo-700 mb-2">{t('analyzing')}</p>
+                  <div className="w-full bg-indigo-100 rounded-full h-1.5">
+                    <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.max(5, progress)}%` }} />
+                  </div>
+                  <p className="text-xs text-indigo-400 mt-1">{progress}%</p>
+                </div>
                 {imagePreview && (
-                  <img src={imagePreview} alt="preview" className="mt-4 max-h-40 rounded-xl object-contain opacity-60" />
+                  <img src={imagePreview} alt="preview" className="max-h-36 rounded-xl object-contain opacity-50" />
                 )}
               </div>
             ) : (
@@ -227,28 +270,28 @@ export default function ImportInvoicePage() {
 
           {parseError && (
             <div className="mt-4 flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-3 rounded-xl">
-              <AlertCircle size={15} className="shrink-0" />
-              {parseError}
+              <AlertCircle size={15} className="shrink-0" /> {parseError}
             </div>
           )}
         </div>
       )}
 
-      {/* Review step */}
+      {/* Review */}
       {step === 'review' && (
         <form onSubmit={handleSave}>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-            {/* Image preview */}
+            {/* Image */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sticky top-4">
                 {imagePreview && (
-                  <img src={imagePreview} alt="Factura importada" className="w-full rounded-xl object-contain max-h-96" />
+                  <img src={imagePreview} alt="Factura" className="w-full rounded-xl object-contain max-h-96" />
                 )}
                 <div className="mt-3 flex items-center gap-2">
                   <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                  <span className="text-xs text-gray-500">Datos extraídos con IA</span>
-                  <button type="button" onClick={() => { setStep('upload'); setImagePreview(null); setImageFile(null); setParseError('') }}
+                  <span className="text-xs text-gray-500">Texto extraído con OCR</span>
+                  <button type="button"
+                    onClick={() => { setStep('upload'); setImagePreview(null); setParseError('') }}
                     className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-500 transition-colors">
                     <RotateCcw size={11} /> {t('changeImage')}
                   </button>
@@ -265,11 +308,6 @@ export default function ImportInvoicePage() {
               {/* Cliente y proyecto */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
                 <div>
-                  {extractedClient && (
-                    <p className="text-xs text-indigo-600 font-medium mb-1">
-                      {t('extractedHint')} <span className="font-bold">{extractedClient}</span>
-                    </p>
-                  )}
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Cliente *</label>
                   <select value={clientId} onChange={e => { setClientId(e.target.value); setProjectId('') }} className="input">
                     <option value="">{t('selectOrCreate')}</option>
@@ -344,7 +382,7 @@ export default function ImportInvoicePage() {
                 </button>
               </div>
 
-              {/* Impuestos y totales */}
+              {/* Impuestos */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>

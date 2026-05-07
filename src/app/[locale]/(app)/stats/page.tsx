@@ -110,8 +110,8 @@ export default function StatsPage() {
           <div className="bg-blue-50 p-2.5 rounded-xl shrink-0">
             <Users size={18} className="text-blue-600" />
           </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium mb-0.5">{t('totalClients')}</p>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-400 font-medium mb-0.5 truncate">{t('totalClients')}</p>
             <p className="text-xl font-extrabold text-gray-900">{clients.length}</p>
           </div>
         </div>
@@ -119,17 +119,17 @@ export default function StatsPage() {
           <div className="bg-emerald-50 p-2.5 rounded-xl shrink-0">
             <TrendingUp size={18} className="text-emerald-600" />
           </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium mb-0.5">{t('totalCollected')}</p>
-            <p className="text-xl font-extrabold text-gray-900">{totalRevenue.toLocaleString('es-ES')} €</p>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-400 font-medium mb-0.5 truncate">{t('totalCollected')}</p>
+            <p className="text-xl font-extrabold text-gray-900 truncate">{totalRevenue.toLocaleString('es-ES')} €</p>
           </div>
         </div>
         <div className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4">
           <div className="bg-amber-50 p-2.5 rounded-xl shrink-0">
             <Award size={18} className="text-amber-600" />
           </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium mb-0.5">{t('topClient')}</p>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-400 font-medium mb-0.5 truncate">{t('topClient')}</p>
             <p className="text-base font-extrabold text-gray-900 truncate">
               {topClient && topClient.totalInvoiced > 0 ? topClient.name : '—'}
             </p>

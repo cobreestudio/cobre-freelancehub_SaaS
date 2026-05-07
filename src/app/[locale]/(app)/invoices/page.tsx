@@ -36,6 +36,7 @@ export default function InvoicesPage() {
   const [aiEmail, setAiEmail] = useState('')
   const [aiClientEmail, setAiClientEmail] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiStreaming, setAiStreaming] = useState(false)
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
@@ -186,16 +187,33 @@ export default function InvoicesPage() {
         setAiLoading(false)
         return
       }
-      const data = await res.json()
-      if (!res.ok) {
-        setAiEmail(`Error: ${data.error || res.status}`)
-      } else {
-        setAiEmail(data.email || '')
+      if (res.status === 403) {
+        const data = await res.json()
+        setAiEmail(data.error === 'pro_required' ? '__pro_required__' : `Error: ${data.error}`)
+        setAiLoading(false)
+        return
       }
+      if (!res.ok) {
+        const data = await res.json()
+        setAiEmail(`Error: ${data.error || res.status}`)
+        setAiLoading(false)
+        return
+      }
+      setAiLoading(false)
+      setAiStreaming(true)
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        setAiEmail(prev => prev + decoder.decode(value, { stream: true }))
+      }
+      setAiStreaming(false)
     } catch (err) {
       setAiEmail(`Error: ${err instanceof Error ? err.message : 'Inténtalo de nuevo'}`)
+      setAiLoading(false)
+      setAiStreaming(false)
     }
-    setAiLoading(false)
   }
 
   const handleReminder = (invoice: Invoice) => {
@@ -518,19 +536,32 @@ export default function InvoicesPage() {
                 </div>
               ) : (
                 <>
-                  <p className="text-xs text-gray-400 mb-2 font-medium">Revisa y edita el email antes de enviarlo:</p>
-                  <textarea
-                    value={aiEmail}
-                    onChange={e => setAiEmail(e.target.value)}
-                    rows={12}
-                    className="w-full text-sm font-mono text-gray-700 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none leading-relaxed"
-                  />
+                  <p className="text-xs text-gray-400 mb-2 font-medium">
+                    {aiStreaming ? (
+                      <span className="inline-flex items-center gap-1.5 text-purple-500">
+                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-ping" />
+                        Escribiendo…
+                      </span>
+                    ) : 'Revisa y edita el email antes de enviarlo:'}
+                  </p>
+                  <div className="relative">
+                    <textarea
+                      value={aiEmail}
+                      onChange={e => setAiEmail(e.target.value)}
+                      readOnly={aiStreaming}
+                      rows={12}
+                      className="w-full text-sm font-mono text-gray-700 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none leading-relaxed"
+                    />
+                    {aiStreaming && (
+                      <span className="absolute bottom-3 right-3 w-2 h-4 bg-purple-400 rounded-sm animate-pulse" />
+                    )}
+                  </div>
                 </>
               )}
             </div>
 
             {/* Modal footer */}
-            {!aiLoading && aiEmail && aiEmail !== '__pro_required__' && (
+            {!aiLoading && !aiStreaming && aiEmail && aiEmail !== '__pro_required__' && (
               <div className="px-5 py-3 border-t border-gray-100 flex gap-2 justify-end">
                 <button
                   onClick={() => { navigator.clipboard.writeText(aiEmail); show('Email copiado al portapapeles') }}

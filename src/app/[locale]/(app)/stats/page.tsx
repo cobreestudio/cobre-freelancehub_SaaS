@@ -52,6 +52,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [aiAnalysis, setAiAnalysis] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiStreaming, setAiStreaming] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
 
   useEffect(() => {
@@ -101,18 +102,32 @@ export default function StatsPage() {
         }),
       })
 
-      const data = await res.json()
       if (res.status === 403) {
         setAiAnalysis('__pro_required__')
-      } else if (!res.ok) {
-        setAiAnalysis(`Error: ${data.error || res.status}`)
-      } else {
-        setAiAnalysis(data.analysis || '')
+        setAiLoading(false)
+        return
       }
+      if (!res.ok) {
+        const data = await res.json()
+        setAiAnalysis(`Error: ${data.error || res.status}`)
+        setAiLoading(false)
+        return
+      }
+      setAiLoading(false)
+      setAiStreaming(true)
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        setAiAnalysis(prev => prev + decoder.decode(value, { stream: true }))
+      }
+      setAiStreaming(false)
     } catch (err) {
       setAiAnalysis(`Error: ${err instanceof Error ? err.message : 'Inténtalo de nuevo'}`)
+      setAiLoading(false)
+      setAiStreaming(false)
     }
-    setAiLoading(false)
   }
 
   if (loading) {
@@ -346,6 +361,12 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
+                  {aiStreaming && aiAnalysis === '' && (
+                    <div className="flex items-center gap-2 text-sm text-purple-500">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-ping" />
+                      Analizando…
+                    </div>
+                  )}
                   {aiAnalysis.split('\n').filter(l => l.trim()).map((line, i) => (
                     <div key={i} className={`flex gap-2.5 text-sm leading-relaxed ${
                       line.trim().startsWith('-') ? 'text-gray-700' : 'text-gray-500 text-xs mt-3'
@@ -356,11 +377,14 @@ export default function StatsPage() {
                       <span>{line.trim().startsWith('-') ? line.trim().slice(1).trim() : line.trim()}</span>
                     </div>
                   ))}
+                  {aiStreaming && aiAnalysis !== '' && (
+                    <span className="inline-block w-2 h-4 bg-purple-400 rounded-sm animate-pulse ml-1" />
+                  )}
                 </div>
               )}
             </div>
 
-            {!aiLoading && aiAnalysis && aiAnalysis !== '__pro_required__' && !aiAnalysis.startsWith('Error') && (
+            {!aiLoading && !aiStreaming && aiAnalysis && aiAnalysis !== '__pro_required__' && !aiAnalysis.startsWith('Error') && (
               <div className="px-5 pb-4 flex justify-between items-center">
                 <p className="text-xs text-gray-300">Generado por Claude Haiku</p>
                 <button onClick={() => { setAiAnalysis(''); handleAiAdvisor() }}

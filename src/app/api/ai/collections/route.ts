@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-    const response = await anthropic.messages.create({
+    const stream = anthropic.messages.stream({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 600,
       system: SYSTEM_PROMPT,
@@ -70,8 +70,25 @@ export async function POST(req: NextRequest) {
       }]
     })
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : ''
-    return NextResponse.json({ email: text, daysOverdue })
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of stream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              controller.enqueue(encoder.encode(event.delta.text))
+            }
+          }
+          controller.close()
+        } catch (err) {
+          controller.error(err)
+        }
+      }
+    })
+
+    return new Response(readable, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    })
   } catch (err) {
     console.error('[ai/collections]', err)
     const message = err instanceof Error ? err.message : 'Error desconocido'

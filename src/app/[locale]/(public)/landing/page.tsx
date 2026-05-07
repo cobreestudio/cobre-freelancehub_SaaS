@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Coins, Users, FolderKanban, FileText, CheckCircle, ArrowRight } from 'lucide-react'
+import { Coins, Users, FolderKanban, FileText, CheckCircle, ArrowRight, Check, Zap } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 export default function LandingPage() {
@@ -102,8 +102,72 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">{t('pricingTitle')}</h2>
+            <p className="text-gray-500">{t('pricingSubtitle')}</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+
+            {/* Free */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 flex flex-col">
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('free')}</p>
+                <div className="flex items-end gap-1">
+                  <span className="text-4xl font-extrabold text-gray-900">0€</span>
+                </div>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {([t('freePerk1'), t('freePerk2'), t('freePerk3'), t('freePerk4')] as string[]).map(perk => (
+                  <li key={perk} className="flex items-center gap-2.5 text-sm text-gray-600">
+                    <Check size={15} className="text-emerald-500 shrink-0" />
+                    {perk}
+                  </li>
+                ))}
+              </ul>
+              <Link href={`/${locale}/register`}
+                className="text-center py-2.5 rounded-xl border border-indigo-600 text-indigo-600 font-semibold text-sm hover:bg-indigo-50 transition-colors">
+                {t('startFreeBtn')}
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div className="bg-indigo-600 rounded-2xl p-8 flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4">
+                <span className="inline-flex items-center gap-1 bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                  <Zap size={11} />
+                  {t('mostPopular')}
+                </span>
+              </div>
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-indigo-200 uppercase tracking-wide mb-2">{t('pro')}</p>
+                <div className="flex items-end gap-1">
+                  <span className="text-4xl font-extrabold text-white">12€</span>
+                  <span className="text-indigo-200 text-sm mb-1">{t('perMonth')}</span>
+                </div>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {([t('proPerk1'), t('proPerk2'), t('proPerk3'), t('proPerk4')] as string[]).map(perk => (
+                  <li key={perk} className="flex items-center gap-2.5 text-sm text-white">
+                    <Check size={15} className="text-indigo-200 shrink-0" />
+                    {perk}
+                  </li>
+                ))}
+              </ul>
+              <Link href={`/${locale}/register`}
+                className="text-center py-2.5 rounded-xl bg-white text-indigo-600 font-semibold text-sm hover:bg-indigo-50 transition-colors">
+                {t('upgradeBtn')}
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* CTA final */}
-      <section className="py-20 px-6 text-center">
+      <section className="py-20 px-6 text-center bg-gray-50 border-t border-gray-100">
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
             {t('ctaTitle')}

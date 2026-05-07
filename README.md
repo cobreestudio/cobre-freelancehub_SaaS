@@ -33,8 +33,8 @@ Cobre is a clean, production-ready SaaS for freelancers to manage clients, proje
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/your-username/cobre.git
-cd cobre
+git clone https://github.com/anibormar11-cyber/freelancehub.git
+cd freelancehub
 npm install
 ```
 

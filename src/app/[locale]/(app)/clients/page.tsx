@@ -22,6 +22,7 @@ export default function ClientsPage() {
   const ti = useTranslations('invoices')
   const [clients, setClients] = useState<Client[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortBy, setSortBy] = useState<'recent' | 'name'>('recent')
@@ -30,8 +31,9 @@ export default function ClientsPage() {
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
-    clientStore.getAll().then(setClients)
-    invoiceStore.getAll().then(setInvoices)
+    Promise.all([clientStore.getAll(), invoiceStore.getAll()]).then(([c, i]) => {
+      setClients(c); setInvoices(i); setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
@@ -66,8 +68,8 @@ export default function ClientsPage() {
       )
   }, [clients, search, statusFilter, sortBy])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('deleteConfirm'))) return
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`¿Eliminar "${name}"?`)) return
     await clientStore.delete(id)
     clientStore.getAll().then(setClients)
     show(t('deleted'))
@@ -142,7 +144,19 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {clients.length === 0 ? (
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+          {[1,2,3].map(i => (
+            <div key={i} className="px-5 py-4 flex items-center gap-4 animate-pulse">
+              <div className="w-9 h-9 bg-gray-100 rounded-full shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-1/3" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : clients.length === 0 ? (
         <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 py-20 text-center">
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users size={20} className="text-gray-400" />
@@ -232,7 +246,7 @@ export default function ClientsPage() {
                       className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                       <Pencil size={14} />
                     </button>
-                    <button onClick={() => handleDelete(client.id)}
+                    <button onClick={() => handleDelete(client.id, client.name)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                       <Trash2 size={14} />
                     </button>

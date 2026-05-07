@@ -25,22 +25,23 @@ export default function InvoicesPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('createdAt')
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
-    invoiceStore.getAll().then(async (data) => {
+    Promise.all([invoiceStore.getAll(), profileStore.get()]).then(async ([data, prof]) => {
+      setProfile(prof)
       const today = new Date().toISOString().split('T')[0]
       const overdue = data.filter(i => i.status === 'sent' && i.dueDate < today)
       if (overdue.length > 0) {
         await Promise.all(overdue.map(i => invoiceStore.update({ ...i, status: 'overdue' })))
-        invoiceStore.getAll().then(setInvoices)
+        invoiceStore.getAll().then(inv => { setInvoices(inv); setLoading(false) })
       } else {
-        setInvoices(data)
+        setInvoices(data); setLoading(false)
       }
     })
-    profileStore.get().then(setProfile)
   }, [])
 
   const filtered = useMemo(() => {
@@ -59,9 +60,9 @@ export default function InvoicesPage() {
       })
   }, [invoices, search, statusFilter, sortBy])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('deleteConfirm'))) return
-    await invoiceStore.delete(id)
+  const handleDelete = async (invoice: Invoice) => {
+    if (!confirm(`¿Eliminar factura ${getInvoiceNumber(invoice, invoices.indexOf(invoice))}?`)) return
+    await invoiceStore.delete(invoice.id)
     invoiceStore.getAll().then(setInvoices)
     show(t('deleted'))
   }
@@ -192,7 +193,19 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      {invoices.length === 0 ? (
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+          {[1,2,3].map(i => (
+            <div key={i} className="px-5 py-4 flex items-center gap-4 animate-pulse">
+              <div className="w-9 h-9 bg-gray-100 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-2/5" />
+                <div className="h-3 bg-gray-100 rounded w-3/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : invoices.length === 0 ? (
         <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 py-20 text-center">
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Euro size={20} className="text-gray-400" />
@@ -275,7 +288,7 @@ export default function InvoicesPage() {
                     className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">
                     <Download size={14} />
                   </button>
-                  <button onClick={() => handleDelete(invoice.id)}
+                  <button onClick={() => handleDelete(invoice)}
                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 size={14} />
                   </button>

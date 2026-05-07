@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { projectStore, invoiceStore } from '@/lib/store'
 import { Project, Invoice } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, Pencil, Check, X, FolderKanban, Search } from 'lucide-react'
+import { Plus, Trash2, Euro, Calendar, Pencil, Check, X, FolderKanban, Search, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -23,15 +23,19 @@ export default function ProjectsPage() {
   const tc = useTranslations('common')
   const [projects, setProjects] = useState<Project[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [sortBy, setSortBy] = useState<'recent' | 'name'>('recent')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<Partial<Project>>({})
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
-    projectStore.getAll().then(setProjects)
-    invoiceStore.getAll().then(setInvoices)
+    Promise.all([projectStore.getAll(), invoiceStore.getAll()]).then(([p, i]) => {
+      setProjects(p); setInvoices(i); setLoading(false)
+    })
   }, [])
 
   useEffect(() => {
@@ -50,10 +54,14 @@ export default function ProjectsPage() {
       const matchStatus = statusFilter === 'all' || p.status === statusFilter
       return matchSearch && matchStatus
     })
-  }, [projects, search, statusFilter])
+    .sort((a, b) => sortBy === 'name'
+      ? a.title.localeCompare(b.title)
+      : a.createdAt < b.createdAt ? 1 : -1
+    )
+  }, [projects, search, statusFilter, sortBy])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('deleteConfirm'))) return
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`¿Eliminar "${title}"?`)) return
     await projectStore.delete(id)
     projectStore.getAll().then(setProjects)
     show(t('deleted'))
@@ -105,6 +113,11 @@ export default function ProjectsPage() {
               placeholder={t('searchPlaceholder')}
               className="input pl-9" />
           </div>
+          <button onClick={() => setSortBy(s => s === 'recent' ? 'name' : 'recent')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition-colors shrink-0">
+            <ArrowUpDown size={13} />
+            {sortBy === 'recent' ? 'A–Z' : t('newProject').split(' ')[0]}
+          </button>
           <div className="flex flex-wrap gap-1.5">
             {filterBtns.map(btn => (
               <button key={btn.value} onClick={() => setStatusFilter(btn.value)}
@@ -120,7 +133,19 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {projects.length === 0 ? (
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+          {[1,2,3].map(i => (
+            <div key={i} className="px-5 py-4 flex items-center gap-4 animate-pulse">
+              <div className="w-9 h-9 bg-gray-100 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-1/3" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : projects.length === 0 ? (
         <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 py-20 text-center">
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FolderKanban size={20} className="text-gray-400" />
@@ -195,7 +220,11 @@ export default function ProjectsPage() {
                       </span>
                     </div>
                     {project.description && (
-                      <p className="text-xs text-gray-400 mt-1 truncate">{project.description}</p>
+                      <p onClick={() => setExpandedId(expandedId === project.id ? null : project.id)}
+                        className={`text-xs text-gray-400 mt-1 cursor-pointer hover:text-gray-600 transition-colors flex items-start gap-1 ${expandedId === project.id ? '' : 'truncate'}`}>
+                        {project.description}
+                        {expandedId !== project.id && <ChevronDown size={11} className="shrink-0 mt-0.5 text-gray-300" />}
+                      </p>
                     )}
                     {invoices.filter(i => i.projectId === project.id).length === 0 && project.status !== 'cancelled' && (
                       <span className="text-xs text-gray-300 font-medium mt-0.5 inline-block">sin facturar</span>
@@ -236,7 +265,7 @@ export default function ProjectsPage() {
                       className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                       <Pencil size={14} />
                     </button>
-                    <button onClick={() => handleDelete(project.id)}
+                    <button onClick={() => handleDelete(project.id, project.title)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                       <Trash2 size={14} />
                     </button>

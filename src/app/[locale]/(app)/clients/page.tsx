@@ -173,6 +173,9 @@ export default function ClientsPage() {
                       {client.phone && <span className="flex items-center gap-1"><Phone size={11} />{client.phone}</span>}
                       {client.company && <span className="flex items-center gap-1"><Building size={11} />{client.company}</span>}
                     </div>
+                    {client.notes && (
+                      <p className="text-xs text-gray-300 mt-0.5 truncate max-w-sm">{client.notes}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button onClick={() => startEdit(client)}

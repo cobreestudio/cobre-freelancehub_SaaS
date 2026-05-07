@@ -30,7 +30,16 @@ export default function InvoicesPage() {
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
-    invoiceStore.getAll().then(setInvoices)
+    invoiceStore.getAll().then(async (data) => {
+      const today = new Date().toISOString().split('T')[0]
+      const overdue = data.filter(i => i.status === 'sent' && i.dueDate < today)
+      if (overdue.length > 0) {
+        await Promise.all(overdue.map(i => invoiceStore.update({ ...i, status: 'overdue' })))
+        invoiceStore.getAll().then(setInvoices)
+      } else {
+        setInvoices(data)
+      }
+    })
     profileStore.get().then(setProfile)
   }, [])
 
@@ -83,6 +92,13 @@ export default function InvoicesPage() {
 
   const paid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
   const pending = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0)
+  const dueDateColor = (dueDate: string) => {
+    const diff = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000)
+    if (diff < 0) return 'text-red-500'
+    if (diff <= 7) return 'text-amber-500'
+    return 'text-gray-400'
+  }
+
   const getInvoiceNumber = (invoice: Invoice, index: number) =>
     invoice.invoiceNumber || `FAC-${String(index + 1).padStart(3, '0')}`
 
@@ -204,6 +220,7 @@ export default function InvoicesPage() {
                     <span className="flex items-center gap-1">
                       <Euro size={10} />
                       <span className="font-bold text-gray-700 text-sm">{invoice.amount.toLocaleString('es-ES')} €</span>
+                      <span className="text-gray-300">+IVA {(invoice.amount * 1.21).toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
                     </span>
                     {invoice.paidAt ? (
                       <span className="flex items-center gap-1 text-emerald-600 font-medium">
@@ -211,7 +228,7 @@ export default function InvoicesPage() {
                         {t('paid')} {new Date(invoice.paidAt).toLocaleDateString('es-ES')}
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1">
+                      <span className={`flex items-center gap-1 ${dueDateColor(invoice.dueDate)}`}>
                         <Calendar size={10} />
                         {t('dueDate')} {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
                       </span>

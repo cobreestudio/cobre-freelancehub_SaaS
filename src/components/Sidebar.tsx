@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
 import { LayoutDashboard, Users, FolderKanban, FileText, Zap, LogOut, UserCircle, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -17,21 +18,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations('sidebar')
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null)
+    })
+  }, [])
 
   const links = [
-    { href: `/${locale}`, label: t('dashboard'), icon: LayoutDashboard },
-    { href: `/${locale}/clients`, label: t('clients'), icon: Users },
-    { href: `/${locale}/projects`, label: t('projects'), icon: FolderKanban },
-    { href: `/${locale}/invoices`, label: t('invoices'), icon: FileText },
-    { href: `/${locale}/profile`, label: t('profile'), icon: UserCircle },
+    { href: `/${locale}`,          label: t('dashboard'), icon: LayoutDashboard },
+    { href: `/${locale}/clients`,  label: t('clients'),   icon: Users },
+    { href: `/${locale}/projects`, label: t('projects'),  icon: FolderKanban },
+    { href: `/${locale}/invoices`, label: t('invoices'),  icon: FileText },
+    { href: `/${locale}/profile`,  label: t('profile'),   icon: UserCircle },
   ]
 
   const isActive = (href: string) =>
     href === `/${locale}` ? pathname === `/${locale}` : pathname.startsWith(href)
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await createClient().auth.signOut()
     router.push(`/${locale}/login`)
     router.refresh()
   }
@@ -43,6 +50,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       transition-transform duration-200 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
+      {/* Logo */}
       <div className="px-5 py-6 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -53,42 +61,41 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
           <p className="text-xs text-gray-500 pl-8">{t('tagline')}</p>
         </div>
-        <button
-          onClick={onClose}
-          className="lg:hidden p-1.5 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 mt-0.5"
-        >
+        <button onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg hover:bg-gray-800 transition-colors text-gray-400 mt-0.5">
           <X size={16} />
         </button>
       </div>
 
-      <div className="px-3 mb-2">
-        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-1">Menú</p>
-      </div>
-
+      {/* Nav */}
       <nav className="flex-1 px-3 space-y-0.5">
+        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-2">Menú</p>
         {links.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href} onClick={onClose}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
               isActive(href)
                 ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
-            }`}
-          >
+                : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
+            }`}>
             <Icon size={17} />
             {label}
           </Link>
         ))}
       </nav>
 
-      <div className="px-3 pb-4 space-y-1 border-t border-gray-800 pt-3">
+      {/* Footer */}
+      <div className="px-3 pb-5 pt-3 border-t border-white/5 space-y-1">
+        {userEmail && (
+          <div className="px-3 py-2 mb-1">
+            <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+          </div>
+        )}
         <LanguageSwitcher />
         <button onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-red-400 transition-all"
-        >
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-red-400 transition-all">
           <LogOut size={17} />
           {t('logout')}
         </button>
-        <p className="text-xs text-gray-600 px-3 pt-1">v1.0 free</p>
       </div>
     </aside>
   )

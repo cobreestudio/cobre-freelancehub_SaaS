@@ -64,7 +64,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-24">
         <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 border border-indigo-100">
-          <Zap size={11} />
+          <Coins size={11} />
           Para freelancers y autónomos
         </div>
 

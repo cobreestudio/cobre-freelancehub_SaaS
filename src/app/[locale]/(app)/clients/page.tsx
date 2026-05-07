@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { clientStore } from '@/lib/store'
-import { Client } from '@/lib/types'
+import { clientStore, invoiceStore } from '@/lib/store'
+import { Client, Invoice } from '@/lib/types'
 import { Plus, Trash2, Mail, Phone, Building, Pencil, Check, X, Users, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
@@ -19,14 +19,35 @@ type StatusFilter = 'all' | Client['status']
 export default function ClientsPage() {
   const t = useTranslations('clients')
   const tc = useTranslations('common')
+  const ti = useTranslations('invoices')
   const [clients, setClients] = useState<Client[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<Partial<Client>>({})
   const { toasts, show, dismiss } = useToast()
 
-  useEffect(() => { clientStore.getAll().then(setClients) }, [])
+  useEffect(() => {
+    clientStore.getAll().then(setClients)
+    invoiceStore.getAll().then(setInvoices)
+  }, [])
+
+  useEffect(() => {
+    if (!editingId) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditingId(null) }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [editingId])
+
+  const avatarColor = (name: string) => {
+    const colors = [
+      'bg-indigo-100 text-indigo-600', 'bg-blue-100 text-blue-600',
+      'bg-emerald-100 text-emerald-600', 'bg-violet-100 text-violet-600',
+      'bg-amber-100 text-amber-600', 'bg-rose-100 text-rose-600',
+    ]
+    return colors[name.charCodeAt(0) % colors.length]
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -165,8 +186,8 @@ export default function ClientsPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <div className="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center shrink-0">
-                    <span className="text-sm font-bold text-indigo-600">{client.name.charAt(0).toUpperCase()}</span>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${avatarColor(client.name)}`}>
+                    <span className="text-sm font-bold">{client.name.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
@@ -174,6 +195,12 @@ export default function ClientsPage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${statusStyle[client.status]}`}>
                         {t(client.status)}
                       </span>
+                      {(() => {
+                        const count = invoices.filter(i => i.clientId === client.id).length
+                        return count > 0 ? (
+                          <span className="text-xs text-gray-300 font-medium shrink-0">{count} {count === 1 ? ti('unit') : ti('unitPlural')}</span>
+                        ) : null
+                      })()}
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-400">
                       {client.email && <span onClick={() => copyEmail(client.email)} className="flex items-center gap-1 cursor-pointer hover:text-indigo-500 transition-colors"><Mail size={11} />{client.email}</span>}

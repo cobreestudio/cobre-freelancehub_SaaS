@@ -34,6 +34,13 @@ export default function ProjectsPage() {
     invoiceStore.getAll().then(setInvoices)
   }, [])
 
+  useEffect(() => {
+    if (!editingId) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditingId(null) }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [editingId])
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     return projects.filter(p => {

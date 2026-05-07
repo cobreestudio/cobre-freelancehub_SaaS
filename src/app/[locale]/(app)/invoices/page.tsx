@@ -92,6 +92,15 @@ export default function InvoicesPage() {
 
   const paid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
   const pending = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + i.amount, 0)
+  const relativeDate = (dateStr: string) => {
+    const diff = Math.round((new Date(dateStr).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / 86400000)
+    if (diff === 0) return t('dueDate') + ' hoy'
+    if (diff === 1) return t('dueDate') + ' mañana'
+    if (diff === -1) return t('dueDate') + ' ayer'
+    if (diff > 1 && diff < 8) return `${t('dueDate')} ${diff}d`
+    return `${t('dueDate')} ${new Date(dateStr).toLocaleDateString('es-ES')}`
+  }
+
   const dueDateColor = (dueDate: string) => {
     const diff = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000)
     if (diff < 0) return 'text-red-500'
@@ -231,7 +240,7 @@ export default function InvoicesPage() {
                     ) : (
                       <span className={`flex items-center gap-1 ${dueDateColor(invoice.dueDate)}`}>
                         <Calendar size={10} />
-                        {t('dueDate')} {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
+                        {relativeDate(invoice.dueDate)}
                       </span>
                     )}
                   </div>

@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cobre — Invoice Management for Freelancers
 
-## Getting Started
+Cobre is a clean, production-ready SaaS for freelancers to manage clients, projects, and invoices from a single place. Built with Next.js 16, Supabase, and Tailwind CSS.
 
-First, run the development server:
+## Features
+
+- **Clients** — full CRUD, notes, status (active/inactive), avatar initials with consistent colors
+- **Projects** — budget tracking, progress bar vs invoiced amount, status workflow
+- **Invoices** — auto-numbered (FAC-YYYY-NNN), PDF generation, inline status changes, inline edit (amount & due date), overdue auto-detection
+- **Dashboard** — revenue bar chart, project status donut, monthly comparison, business health indicator, onboarding banner
+- **Profile** — fiscal data (name, NIF/CIF, address) + payment info (IBAN/Bizum) printed on PDFs
+- **PDF export** — full invoice PDF with fiscal data and payment details via jsPDF
+- **Automated reminders** — daily cron job sends payment reminder emails to clients with overdue invoices (Resend + Vercel Cron), with a 7-day deduplication window
+- **PWA** — installable on Android/iOS, service worker for offline caching
+- **i18n** — Spanish, English, French (next-intl v4)
+- **Auth** — Supabase Auth with Row Level Security (each user only sees their own data)
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Database & Auth | Supabase (PostgreSQL + RLS) |
+| Styling | Tailwind CSS v4 |
+| i18n | next-intl v4 |
+| PDF | jsPDF |
+| Email | Resend |
+| Charts | Recharts |
+| Deploy | Vercel (Hobby plan compatible) |
+
+## Setup
+
+### 1. Clone & install
+
+```bash
+git clone https://github.com/your-username/cobre.git
+cd cobre
+npm install
+```
+
+### 2. Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** and run the full contents of `schema.sql`
+3. Copy your **Project URL** and **anon key** from Settings → API
+
+### 3. Resend (optional — for automated email reminders)
+
+1. Create an account at [resend.com](https://resend.com)
+2. Create an API key
+3. Verify your sending domain (or use `onboarding@resend.dev` for testing)
+
+### 4. Environment variables
+
+Copy `.env.example` to `.env.local` and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+RESEND_API_KEY=re_xxxxxxxx
+RESEND_FROM_EMAIL=noreply@yourdomain.com
+CRON_SECRET=your-random-secret
+```
+
+### 5. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push the repo to GitHub
+2. Import the project in [vercel.com](https://vercel.com)
+3. Add all environment variables from `.env.example` in the Vercel dashboard
+4. Deploy — Vercel will automatically pick up `vercel.json` and schedule the daily cron job
 
-## Learn More
+> **Note:** The automated reminder cron (`/api/send-reminders`) requires Vercel's cron feature, available on the Hobby plan and above.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/
+│   ├── [locale]/
+│   │   ├── (app)/          # Authenticated pages
+│   │   │   ├── page.tsx    # Dashboard
+│   │   │   ├── clients/
+│   │   │   ├── projects/
+│   │   │   ├── invoices/
+│   │   │   └── profile/
+│   │   ├── (public)/       # Auth pages (login, register)
+│   │   └── landing/        # Public landing page
+│   └── api/
+│       └── send-reminders/ # Cron endpoint
+├── components/             # Sidebar, Toast
+├── hooks/                  # useToast
+└── lib/
+    ├── store.ts            # All Supabase data access
+    ├── types.ts            # TypeScript interfaces
+    ├── pdf.ts              # Invoice PDF generator
+    └── supabase.ts         # Supabase client
+messages/                   # i18n translation files (es, en, fr)
+public/
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service worker
+└── icons/
+schema.sql                  # Full database schema with RLS policies
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Customisation
 
-## Deploy on Vercel
+- **Branding** — search for "Cobre" across the codebase to rename the app
+- **Currency** — currently hardcoded to `€`; search for `€` and `es-ES` to change locale
+- **IVA rate** — the 21% IVA calculation in `invoices/page.tsx` and `pdf.ts` can be made configurable
+- **Languages** — add new locales by creating a file in `messages/` and updating `src/i18n/routing.ts`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT — see [LICENSE](LICENSE).

@@ -42,15 +42,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   try {
     const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
-      success_url: `${appUrl}/billing?success=true`,
-      cancel_url: `${appUrl}/billing`,
+      success_url: `${origin}/billing?success=true`,
+      cancel_url: `${origin}/billing`,
       client_reference_id: user.id,
       metadata: { supabase_user_id: user.id },
       allow_promotion_codes: true,

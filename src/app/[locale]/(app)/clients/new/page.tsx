@@ -12,7 +12,7 @@ export default function NewClientPage() {
   const t = useTranslations('clients')
   const tc = useTranslations('common')
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', notes: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
@@ -31,6 +31,7 @@ export default function NewClientPage() {
       email: form.email.trim(),
       phone: form.phone.trim() || undefined,
       company: form.company.trim() || undefined,
+      notes: form.notes.trim() || undefined,
       status: 'active',
       createdAt: new Date().toISOString(),
     }
@@ -41,7 +42,7 @@ export default function NewClientPage() {
 
   const f = (field: keyof typeof form) => ({
     value: form[field],
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm({ ...form, [field]: e.target.value })
       if (error) setError('')
     },
@@ -88,6 +89,11 @@ export default function NewClientPage() {
               className="input" />
           </Field>
         </div>
+
+        <Field label={t('notes')}>
+          <textarea placeholder={t('notesPlaceholder')} {...f('notes')}
+            rows={3} className="input resize-none" />
+        </Field>
 
         <div className="flex gap-3 pt-2">
           <button type="submit" disabled={saving}

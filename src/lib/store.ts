@@ -13,15 +13,15 @@ export const clientStore = {
     const userId = await getUserId()
     if (!userId) return []
     const { data } = await db().from('clients').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    return (data || []).map(r => ({ id: r.id, name: r.name, email: r.email, phone: r.phone, company: r.company, status: r.status, createdAt: r.created_at }))
+    return (data || []).map(r => ({ id: r.id, name: r.name, email: r.email, phone: r.phone, company: r.company, status: r.status, notes: r.notes || undefined, createdAt: r.created_at }))
   },
   async add(client: Client) {
     const userId = await getUserId()
     if (!userId) return
-    await db().from('clients').insert({ id: client.id, user_id: userId, name: client.name, email: client.email, phone: client.phone || null, company: client.company || null, status: client.status, created_at: client.createdAt })
+    await db().from('clients').insert({ id: client.id, user_id: userId, name: client.name, email: client.email, phone: client.phone || null, company: client.company || null, status: client.status, notes: client.notes || null, created_at: client.createdAt })
   },
   async update(client: Client) {
-    await db().from('clients').update({ name: client.name, email: client.email, phone: client.phone || null, company: client.company || null, status: client.status }).eq('id', client.id)
+    await db().from('clients').update({ name: client.name, email: client.email, phone: client.phone || null, company: client.company || null, status: client.status, notes: client.notes || null }).eq('id', client.id)
   },
   async delete(id: string) {
     await db().from('clients').delete().eq('id', id)

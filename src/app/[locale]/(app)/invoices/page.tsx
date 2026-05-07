@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search } from 'lucide-react'
+import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
@@ -26,6 +26,7 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt'>('createdAt')
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
@@ -35,13 +36,19 @@ export default function InvoicesPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return invoices.filter(i => {
-      const matchSearch = !q || i.clientName.toLowerCase().includes(q) ||
-        i.projectTitle.toLowerCase().includes(q)
-      const matchStatus = statusFilter === 'all' || i.status === statusFilter
-      return matchSearch && matchStatus
-    })
-  }, [invoices, search, statusFilter])
+    return invoices
+      .filter(i => {
+        const matchSearch = !q || i.clientName.toLowerCase().includes(q) ||
+          i.projectTitle.toLowerCase().includes(q)
+        const matchStatus = statusFilter === 'all' || i.status === statusFilter
+        return matchSearch && matchStatus
+      })
+      .sort((a, b) => {
+        const da = sortBy === 'dueDate' ? a.dueDate : a.createdAt
+        const db2 = sortBy === 'dueDate' ? b.dueDate : b.createdAt
+        return da < db2 ? -1 : da > db2 ? 1 : 0
+      })
+  }, [invoices, search, statusFilter, sortBy])
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('deleteConfirm'))) return
@@ -132,6 +139,13 @@ export default function InvoicesPage() {
               placeholder={t('searchPlaceholder')}
               className="input pl-9" />
           </div>
+          <button
+            onClick={() => setSortBy(s => s === 'createdAt' ? 'dueDate' : 'createdAt')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 bg-white text-gray-500 hover:border-gray-300 transition-colors shrink-0"
+          >
+            <ArrowUpDown size={13} />
+            {sortBy === 'dueDate' ? t('dueDate') : t('newInvoice')}
+          </button>
           <div className="flex flex-wrap gap-1.5">
             {filterBtns.map(btn => (
               <button key={btn.value} onClick={() => setStatusFilter(btn.value)}

@@ -76,7 +76,9 @@
     "noResults": "Aucun résultat",
     "noResultsHint": "Essayez d'autres termes ou filtres",
     "unit": "client",
-    "unitPlural": "clients"
+    "unitPlural": "clients",
+    "notes": "Notes internes",
+    "notesPlaceholder": "Notes privées sur ce client..."
   },
   "projects": {
     "title": "Projets",

@@ -5,6 +5,7 @@ export interface Client {
   phone?: string
   company?: string
   status: 'active' | 'inactive'
+  notes?: string
   createdAt: string
 }
 

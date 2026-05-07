@@ -10,7 +10,7 @@ import ToastContainer from '@/components/ToastContainer'
 
 const empty: Profile = {
   fullName: '', businessName: '', email: '',
-  phone: '', address: '', taxId: '',
+  phone: '', address: '', taxId: '', plan: 'free',
 }
 
 export default function ProfilePage() {

@@ -90,6 +90,7 @@ export const profileStore = {
       address: data.address || '',
       taxId: data.tax_id || '',
       paymentInfo: data.payment_info || undefined,
+      plan: (data.plan as 'free' | 'pro') || 'free',
     }
   },
   async save(profile: Profile) {

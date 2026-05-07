@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { invoiceStore, projectStore } from '@/lib/store'
+import { invoiceStore, projectStore, profileStore } from '@/lib/store'
 import { Invoice, Project } from '@/lib/types'
-import { ArrowLeft, ReceiptText } from 'lucide-react'
+import { ArrowLeft, ReceiptText, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { FREE_LIMITS } from '@/lib/plans'
 
 export default function NewInvoicePage() {
   const t = useTranslations('invoices')
@@ -21,12 +22,19 @@ export default function NewInvoicePage() {
   })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [blocked, setBlocked] = useState(false)
 
   useEffect(() => {
-    projectStore.getAll().then(setProjects)
     const nextMonth = new Date()
     nextMonth.setMonth(nextMonth.getMonth() + 1)
     setForm(f => ({ ...f, dueDate: nextMonth.toISOString().split('T')[0] }))
+
+    Promise.all([profileStore.get(), invoiceStore.getAll(), projectStore.getAll()]).then(([prof, invoices, projs]) => {
+      setProjects(projs)
+      if ((prof?.plan || 'free') === 'free' && invoices.length >= FREE_LIMITS.invoices) {
+        setBlocked(true)
+      }
+    })
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +69,28 @@ export default function NewInvoicePage() {
   }
 
   const selectedProject = projects.find(p => p.id === form.projectId)
+
+  if (blocked) return (
+    <div className="max-w-lg">
+      <Link href="/invoices" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 mb-7 transition-colors">
+        <ArrowLeft size={14} /> {t('backToInvoices')}
+      </Link>
+      <div className="bg-white rounded-2xl border-2 border-amber-200 p-8 text-center">
+        <div className="bg-amber-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Crown size={22} className="text-amber-600" />
+        </div>
+        <h2 className="text-lg font-bold text-gray-900 mb-2">Límite del plan gratuito</h2>
+        <p className="text-gray-500 text-sm mb-6">
+          El plan gratuito permite hasta <strong>{FREE_LIMITS.invoices} facturas</strong>.<br />
+          Mejora a Pro para crear facturas ilimitadas.
+        </p>
+        <Link href="/billing"
+          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+          <Crown size={14} /> Ver planes
+        </Link>
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-lg">

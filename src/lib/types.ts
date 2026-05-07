@@ -45,4 +45,5 @@ export interface Profile {
   address: string
   taxId: string
   paymentInfo?: string
+  plan: 'free' | 'pro'
 }

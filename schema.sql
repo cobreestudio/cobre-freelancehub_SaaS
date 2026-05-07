@@ -9,15 +9,17 @@ create extension if not exists "uuid-ossp";
 
 -- ── Profiles ─────────────────────────────────────────────────
 create table if not exists profiles (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  full_name   text,
-  business_name text,
-  email       text,
-  phone       text,
-  address     text,
-  tax_id      text,
-  payment_info text,
-  updated_at  timestamptz default now()
+  id                  uuid primary key references auth.users(id) on delete cascade,
+  full_name           text,
+  business_name       text,
+  email               text,
+  phone               text,
+  address             text,
+  tax_id              text,
+  payment_info        text,
+  plan                text not null default 'free' check (plan in ('free', 'pro')),
+  stripe_customer_id  text,
+  updated_at          timestamptz default now()
 );
 
 alter table profiles enable row level security;

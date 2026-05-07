@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   if (!customerId) {
     const customer = await getStripe().customers.create({
-      email: profile?.email || user.email,
+      email: profile?.email || user.email || undefined,
       metadata: { supabase_user_id: user.id },
     })
     customerId = customer.id

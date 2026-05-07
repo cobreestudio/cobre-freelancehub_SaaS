@@ -51,5 +51,10 @@ export async function POST(req: NextRequest) {
       .eq('stripe_customer_id', customerId)
   }
 
+  if (event.type === 'invoice.payment_failed') {
+    const invoice = event.data.object as Stripe.Invoice
+    console.error('[stripe] Payment failed for customer:', invoice.customer, '— attempt:', invoice.attempt_count)
+  }
+
   return NextResponse.json({ received: true })
 }

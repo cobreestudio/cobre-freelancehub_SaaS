@@ -14,7 +14,7 @@ const BASE_URL = 'https://cobre-rho.vercel.app'
 
 const meta = {
   es: {
-    title: 'Cobre — Facturación Gratis para Autónomos',
+    title: 'Cobre — Facturación Gratis para Autónomos y Freelancers',
     description: 'App de facturación gratuita para autónomos. Crea facturas PDF, gestiona clientes y proyectos, cobra más rápido. Empieza gratis.',
     keywords: ['facturas autónomos', 'app facturación autónomos', 'crear facturas pdf gratis', 'programa facturas freelancer', 'facturación online gratis', 'gestión facturas freelancer', 'facturar online autónomo', 'software facturación españa', 'cobro freelance', 'generar factura pdf'],
   },

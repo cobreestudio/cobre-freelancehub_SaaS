@@ -23,7 +23,7 @@ export default async function middleware(request: NextRequest) {
     return handleI18n(request)
   }
 
-  const isPublicPage = /^\/(es|en|fr)\/(login|register|landing)$/.test(pathname)
+  const isPublicPage = /^\/(es|en|fr)\/(login|register|landing|invoice\/.+)$/.test(pathname)
   let response = handleI18n(request)
 
   const supabase = createServerClient(

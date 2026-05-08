@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { invoiceStore, profileStore, clientStore } from '@/lib/store'
 import { Invoice, Profile } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown, ImagePlus, Sparkles } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { Plus, Trash2, Euro, Calendar, TrendingUp, Clock, Download, Bell, FileText, Search, ArrowUpDown, Pencil, Check, X, Copy, FileDown, ImagePlus, Sparkles, Link2 } from 'lucide-react'
+import { useTranslations, useLocale } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
 
@@ -21,6 +21,7 @@ type StatusFilter = 'all' | Invoice['status']
 export default function InvoicesPage() {
   const t = useTranslations('invoices')
   const tc = useTranslations('common')
+  const locale = useLocale()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [profile, setProfile] = useState<Profile | null>(null)
   const [search, setSearch] = useState('')
@@ -214,6 +215,12 @@ export default function InvoicesPage() {
       setAiLoading(false)
       setAiStreaming(false)
     }
+  }
+
+  const handleCopyLink = (invoice: Invoice) => {
+    const url = `${window.location.origin}/${locale}/invoice/${invoice.id}`
+    navigator.clipboard.writeText(url)
+    show('Link copiado al portapapeles')
   }
 
   const handleReminder = (invoice: Invoice) => {
@@ -443,6 +450,10 @@ export default function InvoicesPage() {
                       <Sparkles size={14} />
                     </button>
                   )}
+                  <button onClick={() => handleCopyLink(invoice)} title="Copiar link público"
+                    className="hidden sm:flex p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors">
+                    <Link2 size={14} />
+                  </button>
                   <button onClick={() => handleDownloadPDF(invoice, invoices.indexOf(invoice))} disabled={downloading === invoice.id}
                     title="Descargar PDF"
                     className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">

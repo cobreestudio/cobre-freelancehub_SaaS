@@ -238,7 +238,21 @@
     "accountCreated": "¡Cuenta creada!",
     "confirmationSent": "Hemos enviado un enlace de confirmación a {email}. Revisa tu bandeja de entrada y pulsa el enlace para activar tu cuenta.",
     "backToLogin": "Volver al login",
-    "alreadyHaveAccount": "Ya tengo cuenta"
+    "alreadyHaveAccount": "Ya tengo cuenta",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "forgotPasswordTitle": "Recuperar contraseña",
+    "forgotPasswordSubtitle": "Te enviamos un enlace para restablecer tu contraseña",
+    "sendResetLink": "Enviar enlace",
+    "sendingResetLink": "Enviando...",
+    "resetLinkSent": "¡Enlace enviado! Revisa tu bandeja de entrada.",
+    "resetPasswordTitle": "Nueva contraseña",
+    "resetPasswordSubtitle": "Introduce tu nueva contraseña",
+    "newPassword": "Nueva contraseña",
+    "savePassword": "Guardar contraseña",
+    "savingPassword": "Guardando...",
+    "passwordUpdated": "¡Contraseña actualizada! Redirigiendo...",
+    "resetLinkExpired": "El enlace no es válido o ha expirado.",
+    "requestNewLink": "Solicitar un nuevo enlace"
   },
   "landing": {
     "badge": "Para freelancers y autónomos",

@@ -238,7 +238,21 @@
     "accountCreated": "Compte créé !",
     "confirmationSent": "Nous avons envoyé un lien de confirmation à {email}. Consultez votre boîte de réception et cliquez sur le lien pour activer votre compte.",
     "backToLogin": "Retour à la connexion",
-    "alreadyHaveAccount": "J'ai déjà un compte"
+    "alreadyHaveAccount": "J'ai déjà un compte",
+    "forgotPassword": "Mot de passe oublié ?",
+    "forgotPasswordTitle": "Récupérer le mot de passe",
+    "forgotPasswordSubtitle": "Nous vous enverrons un lien pour réinitialiser votre mot de passe",
+    "sendResetLink": "Envoyer le lien",
+    "sendingResetLink": "Envoi en cours...",
+    "resetLinkSent": "Lien envoyé ! Vérifiez votre boîte de réception.",
+    "resetPasswordTitle": "Nouveau mot de passe",
+    "resetPasswordSubtitle": "Entrez votre nouveau mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "savePassword": "Enregistrer le mot de passe",
+    "savingPassword": "Enregistrement...",
+    "passwordUpdated": "Mot de passe mis à jour ! Redirection...",
+    "resetLinkExpired": "Le lien est invalide ou a expiré.",
+    "requestNewLink": "Demander un nouveau lien"
   },
   "landing": {
     "badge": "Pour les freelances et indépendants",

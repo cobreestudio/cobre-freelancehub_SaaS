@@ -3,13 +3,30 @@
 import { useEffect, useState } from 'react'
 import { clientStore, projectStore, invoiceStore, profileStore } from '@/lib/store'
 import { Invoice, Project, Client, Profile } from '@/lib/types'
-import { Users, FolderKanban, FileText, TrendingUp, TrendingDown, Plus, ArrowRight, Minus, AlertTriangle, Check } from 'lucide-react'
+import { Users, FolderKanban, FileText, TrendingUp, TrendingDown, Plus, ArrowRight, Minus, AlertTriangle, Check, Receipt } from 'lucide-react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
+
+function computeFiscal(invoices: Invoice[]) {
+  const now = new Date()
+  const year = now.getFullYear()
+  const q = Math.floor(now.getMonth() / 3) + 1
+  const qi = invoices.filter(i => {
+    const d = new Date(i.createdAt)
+    return d.getFullYear() === year && Math.floor(d.getMonth() / 3) + 1 === q
+  })
+  const iva = qi.reduce((s, i) => s + i.amount * ((i.ivaRate ?? 21) / 100), 0)
+  const irpf = qi.reduce((s, i) => s + i.amount * ((i.irpfRate ?? 0) / 100), 0)
+  const deadlineMonth = q === 4 ? 0 : q * 3
+  const deadlineYear = q === 4 ? year + 1 : year
+  const deadline = new Date(deadlineYear, deadlineMonth, 20)
+  const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / 86400000)
+  return { q, year, iva, irpf, deadline, daysLeft, count: qi.length }
+}
 
 function revenueInMonth(invoices: Invoice[], year: number, month: number): number {
   return invoices
@@ -295,6 +312,38 @@ export default function Dashboard() {
               </div>
             </div>
             <span className="text-xs text-gray-300 shrink-0">{paidCount} / {invoices.length}</span>
+          </div>
+        )
+      })()}
+
+      {/* Widget fiscal trimestral */}
+      {!loading && invoices.length > 0 && (() => {
+        const { q, year, iva, irpf, deadline, daysLeft, count } = computeFiscal(invoices)
+        if (count === 0) return null
+        const urgent = daysLeft <= 30
+        const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        const deadlineStr = deadline.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+        return (
+          <div className={`bg-white rounded-2xl border p-5 flex items-start gap-4 ${urgent ? 'border-amber-200' : 'border-gray-100'}`}>
+            <div className={`p-2.5 rounded-xl shrink-0 ${urgent ? 'bg-amber-50' : 'bg-indigo-50'}`}>
+              <Receipt size={18} className={urgent ? 'text-amber-600' : 'text-indigo-500'} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <p className="text-sm font-semibold text-gray-900">Reserva fiscal — T{q} {year}</p>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${urgent ? 'bg-amber-100 text-amber-700' : 'bg-indigo-50 text-indigo-600'}`}>
+                  {daysLeft > 0 ? `${daysLeft}d para declarar` : 'Vencido'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                <span className="text-gray-500">IVA a declarar: <strong className="text-gray-900">{fmt(iva)} €</strong></span>
+                {irpf > 0 && <span className="text-gray-500">IRPF retenido: <strong className="text-gray-900">{fmt(irpf)} €</strong></span>}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">Modelo 303 · Plazo: {deadlineStr} · Basado en {count} factura{count !== 1 ? 's' : ''} del trimestre</p>
+            </div>
+            <Link href={`/${locale}/stats`} className="shrink-0 text-xs text-indigo-500 hover:text-indigo-700 font-medium transition-colors whitespace-nowrap">
+              Ver análisis →
+            </Link>
           </div>
         )
       })()}

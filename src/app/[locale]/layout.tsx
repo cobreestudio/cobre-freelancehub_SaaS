@@ -55,13 +55,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: 'Cobre',
       locale: ogLocale,
       type: 'website',
-      images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Cobre — App de facturación para autónomos' }],
     },
     twitter: {
       card: 'summary_large_image',
       title: m.title,
       description: m.description,
-      images: [`${BASE_URL}/og-image.png`],
     },
     robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large' } },
   }

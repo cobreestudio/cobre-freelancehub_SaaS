@@ -22,19 +22,36 @@ export default function LandingPage() {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Cobre',
+    url: 'https://cobre-rho.vercel.app',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'EUR',
-      description: locale === 'es' ? 'Plan gratuito disponible' : locale === 'fr' ? 'Plan gratuit disponible' : 'Free plan available',
+    creator: {
+      '@type': 'Organization',
+      name: 'Cobre Studio',
+      url: 'https://cobrestudio.vercel.app',
+      email: 'cobreestudio@gmail.com',
     },
+    offers: [
+      {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'EUR',
+        name: locale === 'es' ? 'Plan Gratuito' : locale === 'fr' ? 'Plan Gratuit' : 'Free Plan',
+        description: locale === 'es' ? 'Hasta 3 clientes, 5 proyectos y 10 facturas' : locale === 'fr' ? 'Jusqu\'à 3 clients, 5 projets et 10 factures' : 'Up to 3 clients, 5 projects and 10 invoices',
+      },
+      {
+        '@type': 'Offer',
+        price: '12',
+        priceCurrency: 'EUR',
+        name: 'Pro',
+        description: locale === 'es' ? 'Clientes, proyectos y facturas ilimitados. IA incluida.' : locale === 'fr' ? 'Clients, projets et factures illimités. IA incluse.' : 'Unlimited clients, projects and invoices. AI included.',
+      },
+    ],
     description: locale === 'es'
-      ? 'Gestiona clientes, proyectos y facturas para autónomos. Genera PDFs profesionales y envía recordatorios automáticos.'
+      ? 'App de facturación gratuita para autónomos y freelancers. Gestiona clientes, proyectos y facturas, genera PDFs profesionales y envía recordatorios de cobro automáticos.'
       : locale === 'fr'
-      ? 'Gérez vos clients, projets et factures en tant que freelance.'
-      : 'Manage clients, projects and invoices for freelancers. Generate professional PDFs and send automatic reminders.',
+      ? 'App de facturation gratuite pour freelances. Gérez vos clients, projets et factures, générez des PDFs professionnels et envoyez des rappels de paiement automatiques.'
+      : 'Free invoicing app for freelancers. Manage clients, projects and invoices, generate professional PDFs and send automatic payment reminders.',
   }
 
   return (

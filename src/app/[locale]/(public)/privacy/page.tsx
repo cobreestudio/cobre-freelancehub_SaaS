@@ -133,6 +133,8 @@ const content = {
   },
 }
 
+export const metadata = { robots: { index: false, follow: false } }
+
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   const c = content[locale as keyof typeof content] ?? content.es

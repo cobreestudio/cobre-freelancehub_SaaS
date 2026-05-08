@@ -4,7 +4,6 @@ const BASE_URL = 'https://cobre-rho.vercel.app'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const locales = ['es', 'en', 'fr']
-  const publicRoutes = ['/landing', '/login', '/register']
 
   return locales.flatMap(locale => [
     {
@@ -13,11 +12,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 1.0,
     },
-    ...publicRoutes.slice(1).map(route => ({
-      url: `${BASE_URL}/${locale}${route}`,
+    {
+      url: `${BASE_URL}/${locale}/register`,
       lastModified: new Date(),
       changeFrequency: 'yearly' as const,
-      priority: 0.6,
-    })),
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/${locale}/login`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.5,
+    },
   ])
 }

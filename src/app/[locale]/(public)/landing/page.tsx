@@ -131,7 +131,7 @@ export default function LandingPage() {
                 <div className="w-3 h-3 rounded-full bg-gray-600" />
               </div>
               <div className="flex-1 bg-gray-700 rounded-md px-3 py-1 text-xs text-gray-400 mx-4 text-center max-w-xs mx-auto">
-                cobre.app/dashboard
+                cobre-rho.vercel.app
               </div>
             </div>
             {/* App UI */}

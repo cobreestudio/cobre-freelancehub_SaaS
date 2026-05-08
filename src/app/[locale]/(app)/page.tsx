@@ -16,7 +16,7 @@ function computeFiscal(invoices: Invoice[]) {
   const year = now.getFullYear()
   const q = Math.floor(now.getMonth() / 3) + 1
   const qi = invoices.filter(i => {
-    const d = new Date(i.createdAt)
+    const d = new Date(i.dueDate)
     return d.getFullYear() === year && Math.floor(d.getMonth() / 3) + 1 === q
   })
   const iva = qi.reduce((s, i) => s + i.amount * ((i.ivaRate ?? 21) / 100), 0)

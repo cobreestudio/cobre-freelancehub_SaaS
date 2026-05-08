@@ -188,12 +188,6 @@ export default function InvoicesPage() {
         setAiLoading(false)
         return
       }
-      if (res.status === 403) {
-        const data = await res.json()
-        setAiEmail(data.error === 'pro_required' ? '__pro_required__' : `Error: ${data.error}`)
-        setAiLoading(false)
-        return
-      }
       if (!res.ok) {
         const data = await res.json()
         setAiEmail(`Error: ${data.error || res.status}`)
@@ -255,11 +249,11 @@ export default function InvoicesPage() {
   const isFiltered = search !== '' || statusFilter !== 'all'
   const relativeDate = (dateStr: string) => {
     const diff = Math.round((new Date(dateStr).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / 86400000)
-    if (diff === 0) return t('dueDate') + ' hoy'
-    if (diff === 1) return t('dueDate') + ' mañana'
-    if (diff === -1) return t('dueDate') + ' ayer'
+    if (diff === 0) return t('dueDateToday')
+    if (diff === 1) return t('dueDateTomorrow')
+    if (diff === -1) return t('dueDateYesterday')
     if (diff > 1 && diff < 8) return `${t('dueDate')} ${diff}d`
-    return `${t('dueDate')} ${new Date(dateStr).toLocaleDateString('es-ES')}`
+    return `${t('dueDate')} ${new Date(dateStr).toLocaleDateString()}`
   }
 
   const dueDateColor = (dueDate: string) => {
@@ -557,7 +551,7 @@ export default function InvoicesPage() {
                   </div>
                   <p className="font-semibold text-gray-900 mb-1">Función Pro</p>
                   <p className="text-sm text-gray-500 mb-5">Los emails de cobro con IA están disponibles en el plan Pro.</p>
-                  <a href="/billing"
+                  <a href={`/${locale}/billing`}
                     className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
                     Activar plan Pro
                   </a>

@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { projectStore, invoiceStore } from '@/lib/store'
-import { Project, Invoice } from '@/lib/types'
-import { Plus, Trash2, Euro, Calendar, Pencil, Check, X, FolderKanban, Search, ArrowUpDown, ChevronDown } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { projectStore, invoiceStore, clientStore } from '@/lib/store'
+import { Project, Invoice, Client } from '@/lib/types'
+import { Plus, Trash2, Euro, Calendar, Pencil, Check, X, FolderKanban, Search, ArrowUpDown, ChevronDown, Sparkles, Copy } from 'lucide-react'
+import { useTranslations, useLocale } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
 
@@ -21,9 +21,17 @@ type StatusFilter = 'all' | Project['status']
 export default function ProjectsPage() {
   const t = useTranslations('projects')
   const tc = useTranslations('common')
+  const locale = useLocale()
   const [projects, setProjects] = useState<Project[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [proposalProject, setProposalProject] = useState<Project | null>(null)
+  const [proposalText, setProposalText] = useState('')
+  const [proposalLoading, setProposalLoading] = useState(false)
+  const [proposalStreaming, setProposalStreaming] = useState(false)
+  const [proposalCopied, setProposalCopied] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortBy, setSortBy] = useState<'recent' | 'name'>('recent')
@@ -33,8 +41,8 @@ export default function ProjectsPage() {
   const { toasts, show, dismiss } = useToast()
 
   useEffect(() => {
-    Promise.all([projectStore.getAll(), invoiceStore.getAll()]).then(([p, i]) => {
-      setProjects(p); setInvoices(i); setLoading(false)
+    Promise.all([projectStore.getAll(), invoiceStore.getAll(), clientStore.getAll()]).then(([p, i, c]) => {
+      setProjects(p); setInvoices(i); setClients(c); setLoading(false)
     })
   }, [])
 
@@ -78,6 +86,63 @@ export default function ProjectsPage() {
     projectStore.getAll().then(setProjects)
     setEditingId(null)
     show(t('updated'))
+  }
+
+  const handleAiProposal = async (project: Project) => {
+    setProposalProject(project)
+    setProposalText('')
+    setProposalCopied(false)
+    setProposalLoading(true)
+    try {
+      const { createClient: createSupabaseClient } = await import('@/lib/supabase')
+      const { data: { session } } = await createSupabaseClient().auth.getSession()
+      if (!session) { setProposalLoading(false); return }
+
+      const client = clients.find(c => c.id === project.clientId)
+      const clientProjects = projects.filter(p => p.clientId === project.clientId && p.id !== project.id)
+      const clientInvoices = invoices.filter(i => i.clientId === project.clientId)
+      const pastInvoicedTotal = clientInvoices.reduce((s, i) => s + i.amount, 0)
+      const completedProjects = projects.filter(p => p.status === 'completed').length
+
+      const res = await fetch('/api/ai/proposal', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project: {
+            title: project.title,
+            description: project.description || '',
+            budget: project.budget,
+            clientName: project.clientName,
+            clientCompany: client?.company || '',
+            pastProjectsCount: clientProjects.length,
+            pastInvoicedTotal,
+            completedProjects,
+          }
+        }),
+      })
+
+      if (res.status === 403) { setProposalText('__pro_required__'); setProposalLoading(false); return }
+      if (!res.ok) {
+        const data = await res.json()
+        setProposalText(`Error: ${data.error || res.status}`)
+        setProposalLoading(false)
+        return
+      }
+      setProposalLoading(false)
+      setProposalStreaming(true)
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        setProposalText(prev => prev + decoder.decode(value, { stream: true }))
+      }
+      setProposalStreaming(false)
+    } catch (err) {
+      setProposalText(`Error: ${err instanceof Error ? err.message : 'Inténtalo de nuevo'}`)
+      setProposalLoading(false)
+      setProposalStreaming(false)
+    }
   }
 
   const filterBtns: { label: string; value: StatusFilter }[] = [
@@ -261,6 +326,11 @@ export default function ProjectsPage() {
                     })()}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => handleAiProposal(project)}
+                      title="Generar propuesta IA"
+                      className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                      <Sparkles size={14} />
+                    </button>
                     <button onClick={() => startEdit(project)}
                       className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                       <Pencil size={14} />
@@ -274,6 +344,85 @@ export default function ProjectsPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+      {/* Proposal Modal */}
+      {proposalProject && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={e => { if (e.target === e.currentTarget) setProposalProject(null) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-purple-100 p-1.5 rounded-lg">
+                  <Sparkles size={15} className="text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Propuesta comercial IA</p>
+                  <p className="text-xs text-gray-400 truncate max-w-48">{proposalProject.title}</p>
+                </div>
+              </div>
+              <button onClick={() => setProposalProject(null)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="px-5 py-5 max-h-96 overflow-y-auto">
+              {proposalLoading ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-gray-500">Redactando propuesta…</p>
+                </div>
+              ) : proposalText === '__pro_required__' ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles size={20} className="text-purple-400" />
+                  </div>
+                  <p className="font-semibold text-gray-900 mb-1">Función Pro</p>
+                  <p className="text-sm text-gray-500 mb-5">El generador de propuestas IA está disponible en el plan Pro.</p>
+                  <Link href={`/${locale}/billing`}
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Activar plan Pro
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {proposalStreaming && proposalText === '' && (
+                    <div className="flex items-center gap-2 text-sm text-purple-500">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-ping" />
+                      Redactando…
+                    </div>
+                  )}
+                  {proposalText.split('\n').filter(l => l.trim()).map((line, i) => (
+                    <p key={i} className="text-sm text-gray-700 leading-relaxed">{line.trim()}</p>
+                  ))}
+                  {proposalStreaming && proposalText !== '' && (
+                    <span className="inline-block w-2 h-4 bg-purple-400 rounded-sm animate-pulse ml-1" />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {!proposalLoading && !proposalStreaming && proposalText && proposalText !== '__pro_required__' && !proposalText.startsWith('Error') && (
+              <div className="px-5 pb-4 flex justify-between items-center">
+                <p className="text-xs text-gray-300">Generado por Claude Haiku</p>
+                <div className="flex gap-3">
+                  <button onClick={async () => {
+                    await navigator.clipboard.writeText(proposalText)
+                    setProposalCopied(true)
+                    setTimeout(() => setProposalCopied(false), 2000)
+                  }} className="inline-flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-700 font-medium">
+                    {proposalCopied ? <Check size={12} /> : <Copy size={12} />}
+                    {proposalCopied ? 'Copiado' : 'Copiar'}
+                  </button>
+                  <button onClick={() => { setProposalText(''); handleAiProposal(proposalProject) }}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                    Regenerar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

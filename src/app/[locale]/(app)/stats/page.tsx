@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { clientStore, projectStore, invoiceStore } from '@/lib/store'
 import { Client, Project, Invoice } from '@/lib/types'
-import { BarChart2, TrendingUp, Users, Award, ArrowRight, Building, Sparkles, X } from 'lucide-react'
+import { BarChart2, TrendingUp, Users, Award, ArrowRight, Building, Sparkles, X, Receipt, Copy, Check as CheckIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface ClientStat {
@@ -55,6 +55,12 @@ export default function StatsPage() {
   const [aiStreaming, setAiStreaming] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
 
+  const [taxAnalysis, setTaxAnalysis] = useState('')
+  const [taxLoading, setTaxLoading] = useState(false)
+  const [taxStreaming, setTaxStreaming] = useState(false)
+  const [taxOpen, setTaxOpen] = useState(false)
+  const [taxCopied, setTaxCopied] = useState(false)
+
   useEffect(() => {
     Promise.all([clientStore.getAll(), projectStore.getAll(), invoiceStore.getAll()])
       .then(([c, p, i]) => { setClients(c); setProjects(p); setInvoices(i); setLoading(false) })
@@ -71,6 +77,81 @@ export default function StatsPage() {
   const topClient = stats[0]
   const zeroRateClients = stats.filter(s => s.totalInvoiced > 0 && s.collectionRate === 0).length
   const activeProjects = projects.filter(p => p.status === 'in_progress' || p.status === 'pending').length
+
+  const handleAiTax = async () => {
+    setTaxOpen(true)
+    if (taxAnalysis) return
+    setTaxLoading(true)
+    try {
+      const { createClient: createSupabaseClient } = await import('@/lib/supabase')
+      const { data: { session } } = await createSupabaseClient().auth.getSession()
+      if (!session) { setTaxLoading(false); return }
+
+      const year = new Date().getFullYear()
+      const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1
+
+      const yearInvoices = invoices.filter(i =>
+        new Date(i.createdAt).getFullYear() === year && i.status !== 'draft'
+      )
+
+      const computeQ = (q: number) => {
+        const qi = yearInvoices.filter(i => Math.floor(new Date(i.createdAt).getMonth() / 3) + 1 === q)
+        return {
+          base: qi.reduce((s, i) => s + i.amount, 0),
+          iva: qi.reduce((s, i) => s + i.amount * ((i.ivaRate ?? 21) / 100), 0),
+          irpf: qi.reduce((s, i) => s + i.amount * ((i.irpfRate ?? 0) / 100), 0),
+          paid: qi.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0),
+          pending: qi.filter(i => i.status !== 'paid').reduce((s, i) => s + i.amount, 0),
+          count: qi.length,
+        }
+      }
+
+      const q1 = computeQ(1), q2 = computeQ(2), q3 = computeQ(3), q4 = computeQ(4)
+      const allQ = [q1, q2, q3, q4]
+
+      const unpaidIva = yearInvoices
+        .filter(i => i.status === 'sent' || i.status === 'overdue')
+        .reduce((s, i) => s + i.amount * ((i.ivaRate ?? 21) / 100), 0)
+
+      const taxData = {
+        year, currentQuarter, q1, q2, q3, q4,
+        yearTotal: {
+          base: allQ.reduce((s, q) => s + q.base, 0),
+          iva: allQ.reduce((s, q) => s + q.iva, 0),
+          irpf: allQ.reduce((s, q) => s + q.irpf, 0),
+        },
+        unpaidIva,
+      }
+
+      const res = await fetch('/api/ai/tax', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taxData }),
+      })
+
+      if (res.status === 403) { setTaxAnalysis('__pro_required__'); setTaxLoading(false); return }
+      if (!res.ok) {
+        const data = await res.json()
+        setTaxAnalysis(`Error: ${data.error || res.status}`)
+        setTaxLoading(false)
+        return
+      }
+      setTaxLoading(false)
+      setTaxStreaming(true)
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        setTaxAnalysis(prev => prev + decoder.decode(value, { stream: true }))
+      }
+      setTaxStreaming(false)
+    } catch (err) {
+      setTaxAnalysis(`Error: ${err instanceof Error ? err.message : 'Inténtalo de nuevo'}`)
+      setTaxLoading(false)
+      setTaxStreaming(false)
+    }
+  }
 
   const handleAiAdvisor = async () => {
     setAiOpen(true)
@@ -172,11 +253,18 @@ export default function StatsPage() {
           <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-400 text-sm mt-0.5">{t('subtitle')}</p>
         </div>
-        <button onClick={handleAiAdvisor}
-          className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors shadow-sm">
-          <Sparkles size={14} />
-          <span className="hidden sm:inline">Análisis IA</span>
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleAiTax}
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+            <Receipt size={14} />
+            <span className="hidden sm:inline">Asesor Fiscal IA</span>
+          </button>
+          <button onClick={handleAiAdvisor}
+            className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition-colors shadow-sm">
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">Análisis IA</span>
+          </button>
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -317,6 +405,93 @@ export default function StatsPage() {
             className="inline-flex items-center gap-1.5 bg-amber-600 text-white text-sm px-3 py-2 rounded-xl hover:bg-amber-700 transition-colors font-medium shrink-0">
             {t('viewInvoices')} <ArrowRight size={13} />
           </Link>
+        </div>
+      )}
+
+      {/* Tax Advisor Modal */}
+      {taxOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={e => { if (e.target === e.currentTarget) setTaxOpen(false) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-indigo-100 p-1.5 rounded-lg">
+                  <Receipt size={15} className="text-indigo-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Asesor fiscal IA</p>
+                  <p className="text-xs text-gray-400">Análisis fiscal del año en curso</p>
+                </div>
+              </div>
+              <button onClick={() => setTaxOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="px-5 py-5 max-h-96 overflow-y-auto">
+              {taxLoading ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-gray-500">Analizando tu situación fiscal…</p>
+                </div>
+              ) : taxAnalysis === '__pro_required__' ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Receipt size={20} className="text-indigo-400" />
+                  </div>
+                  <p className="font-semibold text-gray-900 mb-1">Función Pro</p>
+                  <p className="text-sm text-gray-500 mb-5">El asesor fiscal IA está disponible en el plan Pro.</p>
+                  <a href={`/${locale}/billing`}
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                    Activar plan Pro
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {taxStreaming && taxAnalysis === '' && (
+                    <div className="flex items-center gap-2 text-sm text-indigo-500">
+                      <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping" />
+                      Analizando…
+                    </div>
+                  )}
+                  {taxAnalysis.split('\n').filter(l => l.trim()).map((line, i) => (
+                    <div key={i} className={`flex gap-2.5 text-sm leading-relaxed ${
+                      line.trim().startsWith('-') ? 'text-gray-700' : 'text-gray-500 text-xs mt-3'
+                    }`}>
+                      {line.trim().startsWith('-') && (
+                        <span className="text-indigo-400 font-bold shrink-0 mt-0.5">•</span>
+                      )}
+                      <span>{line.trim().startsWith('-') ? line.trim().slice(1).trim() : line.trim()}</span>
+                    </div>
+                  ))}
+                  {taxStreaming && taxAnalysis !== '' && (
+                    <span className="inline-block w-2 h-4 bg-indigo-400 rounded-sm animate-pulse ml-1" />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {!taxLoading && !taxStreaming && taxAnalysis && taxAnalysis !== '__pro_required__' && !taxAnalysis.startsWith('Error') && (
+              <div className="px-5 pb-4 flex justify-between items-center">
+                <p className="text-xs text-gray-300">Generado por Claude Haiku</p>
+                <div className="flex gap-3">
+                  <button onClick={async () => {
+                    await navigator.clipboard.writeText(taxAnalysis)
+                    setTaxCopied(true)
+                    setTimeout(() => setTaxCopied(false), 2000)
+                  }} className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                    {taxCopied ? <CheckIcon size={12} /> : <Copy size={12} />}
+                    {taxCopied ? 'Copiado' : 'Copiar'}
+                  </button>
+                  <button onClick={() => { setTaxAnalysis(''); handleAiTax() }}
+                    className="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                    Regenerar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

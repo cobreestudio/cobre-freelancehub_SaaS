@@ -14,17 +14,17 @@ const BASE_URL = 'https://cobre-rho.vercel.app'
 
 const meta = {
   es: {
-    title: 'Cobre — App de Facturación Gratis para Autónomos y Freelancers',
-    description: 'La app de facturación gratuita para autónomos. Crea facturas PDF, gestiona clientes y proyectos, cobra más rápido y envía recordatorios automáticos. Empieza gratis.',
+    title: 'Cobre — Facturación Gratis para Autónomos',
+    description: 'App de facturación gratuita para autónomos. Crea facturas PDF, gestiona clientes y proyectos, cobra más rápido. Empieza gratis.',
     keywords: ['facturas autónomos', 'app facturación autónomos', 'crear facturas pdf gratis', 'programa facturas freelancer', 'facturación online gratis', 'gestión facturas freelancer', 'facturar online autónomo', 'software facturación españa', 'cobro freelance', 'generar factura pdf'],
   },
   en: {
-    title: 'Cobre — Free Invoice App for Freelancers',
-    description: 'Free invoicing app for freelancers. Create PDF invoices, manage clients and projects, send automatic payment reminders and track your revenue. Start for free.',
+    title: 'Cobre — Free Invoicing App for Freelancers',
+    description: 'Free invoicing app for freelancers. Create PDF invoices, manage clients and projects, send automatic payment reminders. Start for free.',
     keywords: ['free invoicing app freelancers', 'invoice management', 'create pdf invoices free', 'billing software freelancer', 'invoice tracker', 'freelance billing app', 'online invoicing free'],
   },
   fr: {
-    title: 'Cobre — App de Facturation Gratuite pour Freelances',
+    title: 'Cobre — Facturation Gratuite pour Freelances',
     description: 'App de facturation gratuite pour freelances. Créez des factures PDF, gérez vos clients et projets, envoyez des rappels automatiques. Commencez gratuitement.',
     keywords: ['app facturation gratuite freelance', 'gestion factures freelance', 'créer factures pdf gratuit', 'logiciel facturation gratuit', 'suivi facturation', 'facturation en ligne gratuite'],
   },
@@ -55,6 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: 'Cobre',
       locale: ogLocale,
       type: 'website',
+      images: [{ url: `${BASE_URL}/${locale}/opengraph-image`, width: 1200, height: 630, alt: m.title }],
     },
     twitter: {
       card: 'summary_large_image',

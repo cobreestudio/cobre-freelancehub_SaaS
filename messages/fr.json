@@ -211,7 +211,16 @@
     "importSuccess": "Facture importée avec succès",
     "parseError": "Impossible de lire les données. Essayez avec une image plus nette.",
     "extractedHint": "Détecté dans l'image :",
-    "selectOrCreate": "Sélectionnez un client existant"
+    "selectOrCreate": "Sélectionnez un client existant",
+    "withProject": "Associer à un projet",
+    "directInvoiceMode": "Facture directe",
+    "directInvoice": "Facture directe",
+    "client": "Client",
+    "clientRequired": "Sélectionnez un client",
+    "noClients": "Vous n'avez pas encore de clients.",
+    "createClientFirst": "Créez-en un d'abord",
+    "concept": "Concept (optionnel)",
+    "conceptPlaceholder": "Ex : Services de design web"
   },
   "auth": {
     "loginTitle": "Connectez-vous à votre compte",

@@ -31,7 +31,7 @@ export interface InvoiceItem {
 export interface Invoice {
   id: string
   invoiceNumber?: string
-  projectId: string
+  projectId?: string
   clientId: string
   clientName: string
   projectTitle: string

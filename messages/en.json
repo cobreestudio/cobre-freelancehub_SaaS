@@ -211,7 +211,16 @@
     "importSuccess": "Invoice imported successfully",
     "parseError": "Could not read the data. Try with a clearer image.",
     "extractedHint": "Detected in the image:",
-    "selectOrCreate": "Select an existing client"
+    "selectOrCreate": "Select an existing client",
+    "withProject": "Link to project",
+    "directInvoiceMode": "Direct invoice",
+    "directInvoice": "Direct invoice",
+    "client": "Client",
+    "clientRequired": "Select a client",
+    "noClients": "You have no clients yet.",
+    "createClientFirst": "Create one first",
+    "concept": "Concept (optional)",
+    "conceptPlaceholder": "E.g. Web design services"
   },
   "auth": {
     "loginTitle": "Sign in to your account",

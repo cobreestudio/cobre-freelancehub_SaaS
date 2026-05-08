@@ -2,26 +2,32 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { invoiceStore, projectStore, profileStore } from '@/lib/store'
-import { Invoice, InvoiceItem, Project } from '@/lib/types'
-import { ArrowLeft, ReceiptText, Crown, Plus, Trash2 } from 'lucide-react'
+import { invoiceStore, projectStore, clientStore, profileStore } from '@/lib/store'
+import { Invoice, InvoiceItem, Project, Client } from '@/lib/types'
+import { ArrowLeft, ReceiptText, Crown, Plus, Trash2, FolderKanban, User } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { FREE_LIMITS } from '@/lib/plans'
 
 const newItem = (): InvoiceItem => ({ description: '', quantity: 1, unitPrice: 0 })
 
+type Mode = 'project' | 'direct'
+
 export default function NewInvoicePage() {
   const t = useTranslations('invoices')
   const tc = useTranslations('common')
   const router = useRouter()
+  const [mode, setMode] = useState<Mode>('project')
   const [projects, setProjects] = useState<Project[]>([])
+  const [clients, setClients] = useState<Client[]>([])
   const [items, setItems] = useState<InvoiceItem[]>([newItem()])
   const [ivaRate, setIvaRate] = useState(21)
   const [irpfRate, setIrpfRate] = useState(15)
   const [applyIrpf, setApplyIrpf] = useState(false)
   const [form, setForm] = useState({
     projectId: '',
+    clientId: '',
+    concept: '',
     dueDate: '',
     status: 'draft' as Invoice['status'],
   })
@@ -33,8 +39,9 @@ export default function NewInvoicePage() {
     const nextMonth = new Date()
     nextMonth.setMonth(nextMonth.getMonth() + 1)
     setForm(f => ({ ...f, dueDate: nextMonth.toISOString().split('T')[0] }))
-    Promise.all([profileStore.get(), invoiceStore.getAll(), projectStore.getAll()]).then(([prof, invoices, projs]) => {
+    Promise.all([profileStore.get(), invoiceStore.getAll(), projectStore.getAll(), clientStore.getAll()]).then(([prof, invoices, projs, cls]) => {
       setProjects(projs)
+      setClients(cls)
       if ((prof?.plan || 'free') === 'free' && invoices.length >= FREE_LIMITS.invoices) setBlocked(true)
     })
   }, [])
@@ -56,21 +63,42 @@ export default function NewInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.projectId) { setError(t('projectRequired')); return }
+
+    if (mode === 'project' && !form.projectId) { setError(t('projectRequired')); return }
+    if (mode === 'direct' && !form.clientId) { setError(t('clientRequired')); return }
     if (items.some(i => !i.description.trim())) { setError(t('descriptionRequired')); return }
     if (subtotal <= 0) { setError(t('amountRequired')); return }
     if (!form.dueDate) { setError(t('dueDateRequired')); return }
 
     setSaving(true)
-    const project = projects.find(p => p.id === form.projectId)!
+
+    let clientId: string
+    let clientName: string
+    let projectId: string | undefined
+    let projectTitle: string
+
+    if (mode === 'project') {
+      const project = projects.find(p => p.id === form.projectId)!
+      clientId = project.clientId
+      clientName = project.clientName
+      projectId = form.projectId
+      projectTitle = project.title
+    } else {
+      const client = clients.find(c => c.id === form.clientId)!
+      clientId = client.id
+      clientName = client.name
+      projectId = undefined
+      projectTitle = form.concept.trim() || t('directInvoice')
+    }
+
     const invoiceNumber = await invoiceStore.nextNumber()
     const invoice: Invoice = {
       id: crypto.randomUUID(),
       invoiceNumber,
-      projectId: form.projectId,
-      clientId: project.clientId,
-      clientName: project.clientName,
-      projectTitle: project.title,
+      projectId,
+      clientId,
+      clientName,
+      projectTitle,
       amount: subtotal,
       items,
       ivaRate,
@@ -123,36 +151,93 @@ export default function NewInvoicePage() {
         </div>
       </div>
 
+      {/* Mode toggle */}
+      <div className="flex gap-2 mb-5 p-1 bg-gray-100 rounded-xl">
+        <button
+          type="button"
+          onClick={() => { setMode('project'); setError('') }}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+            mode === 'project' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <FolderKanban size={14} />
+          {t('withProject')}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setMode('direct'); setError('') }}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+            mode === 'direct' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <User size={14} />
+          {t('directInvoiceMode')}
+        </button>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
           <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-2.5 rounded-lg">{error}</div>
         )}
 
-        {/* Proyecto */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('project')} *</label>
-          <select
-            value={form.projectId}
-            onChange={e => {
-              const p = projects.find(p => p.id === e.target.value)
-              setForm(f => ({ ...f, projectId: e.target.value }))
-              if (p) setItems([{ description: p.title, quantity: 1, unitPrice: p.budget }])
-              if (error) setError('')
-            }}
-            className="input"
-          >
-            <option value="">{t('projectRequired')}</option>
-            {projects.map(p => <option key={p.id} value={p.id}>{p.title} — {p.clientName}</option>)}
-          </select>
-          {selectedProject && (
-            <p className="text-xs text-gray-400 mt-1.5">
-              {t('projectBudget')}: <span className="font-semibold text-gray-600">{selectedProject.budget.toLocaleString('es-ES')} €</span>
-            </p>
-          )}
-          {projects.length === 0 && (
-            <p className="text-xs text-amber-600 mt-1.5">
-              {t('noProjects')} <Link href="/projects/new" className="underline font-medium">{t('createProjectFirst')}</Link>.
-            </p>
+        {/* Proyecto o cliente directo */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+          {mode === 'project' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('project')} *</label>
+              <select
+                value={form.projectId}
+                onChange={e => {
+                  const p = projects.find(p => p.id === e.target.value)
+                  setForm(f => ({ ...f, projectId: e.target.value }))
+                  if (p) setItems([{ description: p.title, quantity: 1, unitPrice: p.budget }])
+                  if (error) setError('')
+                }}
+                className="input"
+              >
+                <option value="">{t('projectRequired')}</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.title} — {p.clientName}</option>)}
+              </select>
+              {selectedProject && (
+                <p className="text-xs text-gray-400 mt-1.5">
+                  {t('projectBudget')}: <span className="font-semibold text-gray-600">{selectedProject.budget.toLocaleString('es-ES')} €</span>
+                </p>
+              )}
+              {projects.length === 0 && (
+                <p className="text-xs text-amber-600 mt-1.5">
+                  {t('noProjects')} <Link href="/projects/new" className="underline font-medium">{t('createProjectFirst')}</Link>.
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('client')} *</label>
+                <select
+                  value={form.clientId}
+                  onChange={e => { setForm(f => ({ ...f, clientId: e.target.value })); if (error) setError('') }}
+                  className="input"
+                >
+                  <option value="">{t('clientRequired')}</option>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>)}
+                </select>
+                {clients.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1.5">
+                    {t('noClients')} <Link href="/clients/new" className="underline font-medium">{t('createClientFirst')}</Link>.
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('concept')}</label>
+                <input
+                  type="text"
+                  value={form.concept}
+                  onChange={e => setForm(f => ({ ...f, concept: e.target.value }))}
+                  placeholder={t('conceptPlaceholder')}
+                  className="input"
+                />
+              </div>
+            </>
           )}
         </div>
 

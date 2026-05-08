@@ -211,7 +211,16 @@
     "importSuccess": "Factura importada correctamente",
     "parseError": "No se pudieron leer los datos. Inténtalo con otra imagen más clara.",
     "extractedHint": "Detectado en la imagen:",
-    "selectOrCreate": "Selecciona un cliente existente"
+    "selectOrCreate": "Selecciona un cliente existente",
+    "withProject": "Asociar a proyecto",
+    "directInvoiceMode": "Factura directa",
+    "directInvoice": "Factura directa",
+    "client": "Cliente",
+    "clientRequired": "Selecciona un cliente",
+    "noClients": "No tienes clientes aún.",
+    "createClientFirst": "Crea uno primero",
+    "concept": "Concepto (opcional)",
+    "conceptPlaceholder": "Ej: Servicios de diseño web"
   },
   "auth": {
     "loginTitle": "Inicia sesión en tu cuenta",

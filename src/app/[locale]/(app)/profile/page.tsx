@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { profileStore } from '@/lib/store'
 import { Profile } from '@/lib/types'
-import { User, Building, Phone, MapPin, Hash, Mail, Save, CreditCard } from 'lucide-react'
+import { User, Building, Phone, MapPin, Hash, Mail, Save, CreditCard, Download, Upload, Database } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/hooks/useToast'
 import ToastContainer from '@/components/ToastContainer'
+import { clientStore, projectStore, invoiceStore } from '@/lib/store'
 
 const empty: Profile = {
   fullName: '', businessName: '', email: '',
@@ -35,8 +36,48 @@ export default function ProfilePage() {
     show(t('saved'))
   }
 
+  const [importing, setImporting] = useState(false)
+
   const set = (field: keyof Profile, val: string) =>
     setForm(f => ({ ...f, [field]: val }))
+
+  const handleExport = async () => {
+    const [clients, projects, invoices, profile] = await Promise.all([
+      clientStore.getAll(), projectStore.getAll(), invoiceStore.getAll(), profileStore.get(),
+    ])
+    const data = { version: 1, exportedAt: new Date().toISOString(), profile, clients, projects, invoices }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `cobre-backup-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 100)
+    show('Backup descargado')
+  }
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      if (!data.version || !data.clients || !data.invoices) throw new Error('Formato inválido')
+      await Promise.all([
+        ...data.clients.map((c: any) => clientStore.add(c)),
+        ...data.projects.map((p: any) => projectStore.add(p)),
+        ...data.invoices.map((i: any) => invoiceStore.add(i)),
+      ])
+      if (data.profile) await profileStore.save(data.profile)
+      show(`Importados: ${data.clients.length} clientes, ${data.projects.length} proyectos, ${data.invoices.length} facturas`)
+    } catch {
+      show('Archivo inválido o corrupto', 'error')
+    }
+    setImporting(false)
+    e.target.value = ''
+  }
 
   if (loading) {
     return (
@@ -203,6 +244,30 @@ export default function ProfilePage() {
           {saving ? t('saving') : t('save')}
         </button>
       </form>
+
+      {/* Backup & restauración */}
+      <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="bg-gray-100 p-2 rounded-lg">
+            <Database size={16} className="text-gray-500" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-gray-800">Copia de seguridad</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Exporta o importa todos tus datos (clientes, proyectos y facturas)</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={handleExport}
+            className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors">
+            <Download size={14} /> Exportar JSON
+          </button>
+          <label className={`inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer ${importing ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Upload size={14} /> {importing ? 'Importando…' : 'Importar JSON'}
+            <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+          </label>
+        </div>
+        <p className="text-xs text-gray-400 mt-3">La importación añade datos sin borrar los existentes. Útil para migrar entre dispositivos.</p>
+      </div>
     </div>
   )
 }

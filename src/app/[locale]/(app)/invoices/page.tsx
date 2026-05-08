@@ -223,13 +223,30 @@ export default function InvoicesPage() {
     show('Link copiado al portapapeles')
   }
 
-  const handleReminder = (invoice: Invoice) => {
-    const subject = encodeURIComponent(`Recordatorio de pago — Factura ${getInvoiceNumber(invoice, invoices.indexOf(invoice))}`)
-    const body = encodeURIComponent(
-      `Hola ${invoice.clientName},\n\nTe recuerdo que tienes pendiente el pago de la factura correspondiente al proyecto "${invoice.projectTitle}" por un importe de ${invoice.amount.toLocaleString('es-ES')} €.\n\nFecha de vencimiento: ${new Date(invoice.dueDate).toLocaleDateString('es-ES')}\n\nQuedo a tu disposición para cualquier consulta.\n\nUn saludo.`
-    )
-    window.open(`mailto:?subject=${subject}&body=${body}`)
-    show(t('reminderOpening'))
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null)
+
+  const handleReminder = async (invoice: Invoice) => {
+    setSendingReminder(invoice.id)
+    try {
+      const { createClient: createSupabaseClient } = await import('@/lib/supabase')
+      const { data: { session } } = await createSupabaseClient().auth.getSession()
+      if (!session) { show('Sesión expirada', 'error'); setSendingReminder(null); return }
+      const res = await fetch('/api/reminder', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: invoice.id }),
+      })
+      if (res.ok) {
+        show('Recordatorio enviado por email')
+      } else {
+        const d = await res.json()
+        if (d.error === 'Client email not found') show('El cliente no tiene email registrado', 'error')
+        else show('Error al enviar el recordatorio', 'error')
+      }
+    } catch {
+      show('Error de conexión', 'error')
+    }
+    setSendingReminder(null)
   }
 
   const paid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0)
@@ -440,9 +457,9 @@ export default function InvoicesPage() {
                     className="hidden sm:flex p-2 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors disabled:opacity-40">
                     <Copy size={14} />
                   </button>
-                  <button onClick={() => handleReminder(invoice)} title="Recordatorio por email"
-                    className="hidden sm:flex p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors">
-                    <Bell size={14} />
+                  <button onClick={() => handleReminder(invoice)} disabled={sendingReminder === invoice.id} title="Enviar recordatorio por email"
+                    className="hidden sm:flex p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-40">
+                    <Bell size={14} className={sendingReminder === invoice.id ? 'animate-pulse' : ''} />
                   </button>
                   {(invoice.status === 'sent' || invoice.status === 'overdue') && (
                     <button onClick={() => handleAiCollections(invoice)} title="Redactar email con IA"

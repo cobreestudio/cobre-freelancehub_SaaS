@@ -24,5 +24,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly' as const,
       priority: 0.5,
     },
+    {
+      url: `${BASE_URL}/${locale}/blog/app-facturacion-autonomos-gratis`,
+      lastModified: new Date('2026-05-08'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
   ])
 }

@@ -276,6 +276,15 @@ export default function LandingPage() {
         <p className="text-sm text-gray-400">
           © {new Date().getFullYear()} Cobre — {t('footer')}
         </p>
+        <div className="flex items-center justify-center gap-4 mt-2">
+          <Link href={`/${locale}/privacy`} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+            {t('privacy')}
+          </Link>
+          <span className="text-gray-300">·</span>
+          <Link href={`/${locale}/terms`} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+            {t('terms')}
+          </Link>
+        </div>
       </footer>
 
     </div>

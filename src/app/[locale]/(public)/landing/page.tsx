@@ -37,7 +37,7 @@ export default function LandingPage() {
         price: '0',
         priceCurrency: 'EUR',
         name: locale === 'es' ? 'Plan Gratuito' : locale === 'fr' ? 'Plan Gratuit' : 'Free Plan',
-        description: locale === 'es' ? 'Hasta 3 clientes, 5 proyectos y 10 facturas' : locale === 'fr' ? 'Jusqu\'à 3 clients, 5 projets et 10 factures' : 'Up to 3 clients, 5 projects and 10 invoices',
+        description: locale === 'es' ? 'Hasta 10 clientes, 10 proyectos y 30 facturas' : locale === 'fr' ? 'Jusqu\'à 10 clients, 10 projets et 30 factures' : 'Up to 10 clients, 10 projects and 30 invoices',
       },
       {
         '@type': 'Offer',

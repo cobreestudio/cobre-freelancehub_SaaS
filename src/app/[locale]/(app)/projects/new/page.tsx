@@ -2,17 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { projectStore, clientStore } from '@/lib/store'
+import { projectStore, clientStore, profileStore } from '@/lib/store'
 import { Project, Client } from '@/lib/types'
-import { ArrowLeft, FolderPlus } from 'lucide-react'
+import { ArrowLeft, FolderPlus, Crown } from 'lucide-react'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { FREE_LIMITS } from '@/lib/plans'
 
 export default function NewProjectPage() {
   const t = useTranslations('projects')
   const tc = useTranslations('common')
+  const locale = useLocale()
   const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
+  const [blocked, setBlocked] = useState(false)
   const [form, setForm] = useState({
     clientId: '',
     title: '',
@@ -27,6 +30,9 @@ export default function NewProjectPage() {
 
   useEffect(() => {
     clientStore.getAll().then(setClients)
+    Promise.all([profileStore.get(), projectStore.getAll()]).then(([prof, projects]) => {
+      if ((prof?.plan || 'free') === 'free' && projects.length >= FREE_LIMITS.projects) setBlocked(true)
+    })
     setTimeout(() => titleRef.current?.focus(), 50)
   }, [])
 
@@ -58,6 +64,26 @@ export default function NewProjectPage() {
     setForm(f => ({ ...f, [field]: val }))
     if (error) setError('')
   }
+
+  if (blocked) return (
+    <div className="max-w-lg">
+      <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 mb-7 transition-colors">
+        <ArrowLeft size={14} /> {t('backToProjects')}
+      </Link>
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-amber-100 p-2.5 rounded-xl"><Crown size={20} className="text-amber-600" /></div>
+          <div>
+            <p className="font-semibold text-gray-900">Límite del plan gratuito</p>
+            <p className="text-sm text-gray-500">El plan gratuito permite hasta {FREE_LIMITS.projects} proyectos</p>
+          </div>
+        </div>
+        <Link href={`/${locale}/billing`} className="w-full text-center bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+          Mejorar a Pro
+        </Link>
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-lg">

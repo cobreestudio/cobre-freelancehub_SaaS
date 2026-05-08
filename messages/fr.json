@@ -332,7 +332,7 @@
     "portalError": "Impossible d'ouvrir le portail. Veuillez réessayer.",
     "freeFeature1": "Jusqu'à {n} clients",
     "freeFeature2": "Jusqu'à {n} factures",
-    "freeFeature3": "Projets illimités",
+    "freeFeature3": "Jusqu'à {n} projets",
     "freeFeature4": "Export PDF",
     "proFeature1": "Clients illimités",
     "proFeature2": "Factures illimitées",

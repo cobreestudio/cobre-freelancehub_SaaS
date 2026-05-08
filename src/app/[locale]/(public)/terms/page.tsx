@@ -17,7 +17,7 @@ const content = {
       },
       {
         heading: '3. Planes y pagos',
-        body: 'El plan Free es gratuito con límites de uso (3 clientes, 5 proyectos, 10 facturas). El plan Pro se factura mensualmente a 12 €/mes mediante Stripe. Los precios incluyen IVA cuando corresponde. Las suscripciones se renuevan automáticamente hasta que las canceles.',
+        body: 'El plan Free es gratuito con límites de uso (10 clientes, 10 proyectos, 30 facturas). El plan Pro se factura mensualmente a 12 €/mes mediante Stripe. Los precios incluyen IVA cuando corresponde. Las suscripciones se renuevan automáticamente hasta que las canceles.',
       },
       {
         heading: '4. Cancelación y reembolsos',

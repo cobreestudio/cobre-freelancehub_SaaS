@@ -332,7 +332,7 @@
     "portalError": "Could not open portal. Please try again.",
     "freeFeature1": "Up to {n} clients",
     "freeFeature2": "Up to {n} invoices",
-    "freeFeature3": "Unlimited projects",
+    "freeFeature3": "Up to {n} projects",
     "freeFeature4": "PDF export",
     "proFeature1": "Unlimited clients",
     "proFeature2": "Unlimited invoices",

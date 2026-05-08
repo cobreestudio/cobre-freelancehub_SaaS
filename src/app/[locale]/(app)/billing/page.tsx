@@ -67,7 +67,7 @@ export default function BillingPage() {
   const freeFeatures = [
     t('freeFeature1', { n: FREE_LIMITS.clients }),
     t('freeFeature2', { n: FREE_LIMITS.invoices }),
-    t('freeFeature3'),
+    t('freeFeature3', { n: FREE_LIMITS.projects }),
     t('freeFeature4'),
   ]
 

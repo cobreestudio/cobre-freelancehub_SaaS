@@ -46,7 +46,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'AI no configurada' }, { status: 500 })
     }
 
-    const { stats } = await req.json()
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Petición inválida' }, { status: 400 })
+    }
+    const { stats } = body as { stats: Record<string, unknown> }
+    if (!stats || typeof stats !== 'object') {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -91,7 +100,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     console.error('[ai/advisor]', err)
-    const message = err instanceof Error ? err.message : 'Error desconocido'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

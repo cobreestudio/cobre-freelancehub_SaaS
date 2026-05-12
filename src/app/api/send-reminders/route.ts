@@ -28,7 +28,8 @@ export async function GET(req: NextRequest) {
     .lte('due_date', today)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[send-reminders]', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 
   if (!invoices?.length) {

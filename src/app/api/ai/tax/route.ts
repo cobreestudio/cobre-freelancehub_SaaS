@@ -51,7 +51,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'AI no configurada' }, { status: 500 })
     }
 
-    const { taxData } = await req.json()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let body: any
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Petición inválida' }, { status: 400 })
+    }
+    const { taxData } = body
+    if (!taxData || typeof taxData !== 'object') {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    }
 
     const formatQ = (q: { base: number; iva: number; irpf: number; paid: number; pending: number; count: number }, label: string) => {
       if (q.count === 0) return `${label}: Sin facturas`
@@ -100,7 +110,6 @@ IVA en facturas impagadas (devengado pero sin cobrar aún): ${taxData.unpaidIva.
     })
   } catch (err) {
     console.error('[ai/tax]', err)
-    const message = err instanceof Error ? err.message : 'Error desconocido'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

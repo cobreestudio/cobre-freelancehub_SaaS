@@ -53,7 +53,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'AI no configurada' }, { status: 500 })
     }
 
-    const { project } = await req.json()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let body: any
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Petición inválida' }, { status: 400 })
+    }
+    const { project } = body
+    if (!project || typeof project !== 'object') {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    }
     const freelancerName = profile?.business_name || profile?.full_name || 'el freelancer'
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -101,7 +111,6 @@ Total de proyectos completados por el freelancer: ${project.completedProjects}`
     })
   } catch (err) {
     console.error('[ai/proposal]', err)
-    const message = err instanceof Error ? err.message : 'Error desconocido'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

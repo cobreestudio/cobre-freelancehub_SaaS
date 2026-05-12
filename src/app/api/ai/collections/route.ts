@@ -47,7 +47,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'AI no configurada' }, { status: 500 })
     }
 
-    const { invoice } = await req.json()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let body: any
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Petición inválida' }, { status: 400 })
+    }
+    const { invoice } = body
+    if (!invoice || typeof invoice !== 'object') {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    }
     const daysOverdue = Math.ceil((Date.now() - new Date(invoice.dueDate).getTime()) / 86400000)
     const issuerName = profile?.business_name || profile?.full_name || 'el emisor'
 
@@ -91,7 +101,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     console.error('[ai/collections]', err)
-    const message = err instanceof Error ? err.message : 'Error desconocido'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

@@ -69,12 +69,12 @@ export async function POST(req: NextRequest) {
 
 - Clientes activos: ${stats.activeClients} de ${stats.totalClients} totales
 - Proyectos en curso: ${stats.activeProjects}
-- Total facturado: ${stats.totalInvoiced.toLocaleString('es-ES')} €
-- Total cobrado: ${stats.totalCollected.toLocaleString('es-ES')} €
-- Pendiente de cobro: ${stats.totalPending.toLocaleString('es-ES')} €
-- Facturas vencidas: ${stats.overdueCount} (${stats.overdueAmount.toLocaleString('es-ES')} €)
+- Total facturado: ${Number(stats.totalInvoiced).toLocaleString('es-ES')} €
+- Total cobrado: ${Number(stats.totalCollected).toLocaleString('es-ES')} €
+- Pendiente de cobro: ${Number(stats.totalPending).toLocaleString('es-ES')} €
+- Facturas vencidas: ${stats.overdueCount} (${Number(stats.overdueAmount).toLocaleString('es-ES')} €)
 - Tasa de cobro global: ${stats.collectionRate}%
-- Mejor cliente: ${stats.topClient} (${stats.topClientAmount.toLocaleString('es-ES')} €)
+- Mejor cliente: ${stats.topClient} (${Number(stats.topClientAmount).toLocaleString('es-ES')} €)
 - Clientes con tasa de cobro 0%: ${stats.zeroRateClients}`
       }]
     })

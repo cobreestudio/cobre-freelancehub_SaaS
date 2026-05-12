@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { aiRatelimit } from '@/lib/ratelimit'
 
 export const runtime = 'nodejs'
 
@@ -38,6 +39,11 @@ export async function POST(req: NextRequest) {
     const token = authHeader.replace('Bearer ', '')
     const { data: { user } } = await supabase.auth.getUser(token)
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { success } = await aiRatelimit.limit(user.id)
+    if (!success) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes. Inténtalo más tarde.' }, { status: 429 })
+    }
 
     const { data: profile } = await supabase
       .from('profiles')

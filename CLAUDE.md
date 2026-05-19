@@ -2,7 +2,7 @@
 
 ## Identidad del proyecto
 - **Nombre:** Cobre
-- **Repo:** https://github.com/anibormar11-cyber/freelancehub (rama `main`)
+- **Repo:** https://github.com/cobreestudio/cobre-freelancehub_SaaS (rama `main`)
 - **Deploy:** Vercel (CD automático) — https://cobre-rho.vercel.app
 - **Ruta local:** `C:\Users\AlumnoSMR1\Projects\freelancehub`
 
